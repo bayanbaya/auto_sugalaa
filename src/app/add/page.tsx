@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
@@ -377,7 +376,7 @@ export default function LotteryImportSystem() {
   }
 
   return (
- <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Буцах товч */}
         <button
@@ -645,14 +644,13 @@ export default function LotteryImportSystem() {
           </div>
         )}
 
-
-        {/* Хадгалах товч - хүснэгтийн доор */}
+        {/* Хадгалах товч */}
         {parsedData.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-6 border border-white/20">
             <button
               onClick={saveToDatabase}
               disabled={isSaving}
-              className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-gray-900 rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all shadow-lg hover:shadow-yellow-500/50 font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? (
                 <>
