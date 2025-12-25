@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  autosugalaa-next:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_BACKEND_API_URL: ""
+    image: autosugalaa-next:latest
+    container_name: autosugalaa-next
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DB_HOST: mydb          # 👈 ЭНД ЗАСАГДСАН
+      DB_USER: root
+      DB_PASSWORD: "abcd@1234"
+      DB_NAME: autosugalaa
+      DB_PORT: 3306
+    ports:
+      - "3001:3000"
+    depends_on:
+      - mydb
+    networks:
+      - shared-network
+
+  mydb:
+    image: mysql:8.0
+    container_name: autosugalaa-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: abcd@1234
+      MYSQL_DATABASE: autosugalaa
+      MYSQL_ROOT_HOST: "%"
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - shared-network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  shared-network:
+    driver: bridge
+
