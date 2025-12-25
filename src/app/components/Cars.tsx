@@ -48,7 +48,7 @@ async function fetchWithRetry(
     }
     try {
       return await res.json();
-    } catch (e) {
+    } catch {
       throw new Error("Invalid JSON received from /api/cars");
     }
   } catch (e) {
@@ -142,6 +142,13 @@ const CarCard = memo(function CarCard({ car, priority = false }: { car: Car; pri
     }
   };
 
+  const handleImageError = () => {
+    if (imgSrc !== FALLBACK_IMG) {
+      setImgSrc(FALLBACK_IMG);
+      setImgErrored(true);
+    }
+  };
+
   return (
     <li className="relative rounded-2xl overflow-hidden shadow-lg bg-gray-800 group transition-transform hover:scale-[1.02]">
       <Image
@@ -154,12 +161,7 @@ const CarCard = memo(function CarCard({ car, priority = false }: { car: Car; pri
         blurDataURL="/blur/placeholder-24px.jpg"
         priority={priority}
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        onError={() => {
-          if (imgSrc !== FALLBACK_IMG) {
-            setImgSrc(FALLBACK_IMG);
-            setImgErrored(true);
-          }
-        }}
+        onError={handleImageError}
       />
 
       <div className="bg-white/10 backdrop-blur-md p-4 text-white space-y-3">

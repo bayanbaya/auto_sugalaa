@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import * as XLSX from 'xlsx';
 import { Upload, FileSpreadsheet, CheckCircle, XCircle, Trash2, RefreshCw, Save, Edit2, Check, X, ArrowLeft, Car, AlertCircle } from 'lucide-react';
@@ -29,7 +29,37 @@ interface CarData {
   sold: number;
 }
 
-export default function LotteryImportSystem() {
+interface ExcelRow extends Array<string | number | null | undefined> {
+  [index: number]: string | number | null | undefined;
+}
+
+interface ValidationResult {
+  guildgeeniiOgnoo: string;
+  salbar: string;
+  credit: number;
+  guildgeeniiUtga: string;
+  haritsanDans: string;
+  ehniilUldegdel: number;
+  etsiin_Uldegdel: number;
+  importDate: string;
+  rowNumber: number;
+  isValid: boolean;
+}
+
+// Loading component
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+      <div className="text-center">
+        <RefreshCw className="w-16 h-16 text-yellow-400 mx-auto mb-4 animate-spin" />
+        <p className="text-xl text-white font-semibold">Уншиж байна...</p>
+      </div>
+    </div>
+  );
+}
+
+// Main content component
+function LotteryImportContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
@@ -104,17 +134,16 @@ export default function LotteryImportSystem() {
   }, []);
 
   // Өгөгдөл цэвэрлэх
-  const validateAndCleanEntry = useCallback((row: any[], index: number) => {
+  const validateAndCleanEntry = useCallback((row: ExcelRow, index: number): ValidationResult | null => {
     const date = row[0];
     const branch = row[1];
     const startBalance = row[2];
-    const debit = row[3];
     const credit = row[4];
     const endBalance = row[5];
     const description = row[6];
     const counterAccount = row[7];
 
-    const creditAmount = parseFloat(credit);
+    const creditAmount = parseFloat(String(credit || 0));
     if (!creditAmount || creditAmount <= 0) {
       return null;
     }
@@ -139,8 +168,8 @@ export default function LotteryImportSystem() {
       credit: creditAmount,
       guildgeeniiUtga: String(description || '').trim(),
       haritsanDans: String(counterAccount || '').trim(),
-      ehniilUldegdel: parseFloat(startBalance) || 0,
-      etsiin_Uldegdel: parseFloat(endBalance) || 0,
+      ehniilUldegdel: parseFloat(String(startBalance)) || 0,
+      etsiin_Uldegdel: parseFloat(String(endBalance)) || 0,
       importDate: new Date().toISOString(),
       rowNumber: index + 9,
       isValid: true
@@ -148,7 +177,7 @@ export default function LotteryImportSystem() {
   }, []);
 
   // Excel боловсруулах
-  const processLotteryData = useCallback((rawData: any[]) => {
+  const processLotteryData = useCallback((rawData: ExcelRow[]) => {
     if (rawData.length < 9) {
       throw new Error('Excel файл хоосон эсвэл буруу форматтай байна. 9-р мөрнөөс өгөгдөл эхлэх ёстой.');
     }
@@ -169,7 +198,8 @@ export default function LotteryImportSystem() {
     dataRows.forEach((row, index) => {
       const result = validateAndCleanEntry(row, index);
       if (result && result.isValid) {
-        lotteryEntries.push(result as LotteryEntry);
+        const { isValid: _isValid, ...entryData } = result;
+        lotteryEntries.push(entryData as LotteryEntry);
       }
     });
 
@@ -182,12 +212,12 @@ export default function LotteryImportSystem() {
 
   // Файл upload
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const uploadedFile = e.target.files?.[0];
+    const uploadedFile = e.currentTarget.files?.[0];
     if (!uploadedFile) return;
 
     if (!employeeName.trim()) {
       setError('Ажилтны нэрээ оруулна уу');
-      e.target.value = '';
+      e.currentTarget.value = '';
       return;
     }
 
@@ -218,15 +248,16 @@ export default function LotteryImportSystem() {
         header: 1,
         raw: false,
         dateNF: 'yyyy-mm-dd hh:mm:ss'
-      });
+      }) as ExcelRow[];
 
       processLotteryData(data);
-    } catch (err: any) {
-      setError(err.message || 'Excel файл боловсруулахад алдаа гарлаа');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Excel файл боловсруулахад алдаа гарлаа';
+      setError(errorMessage);
       setFile(null);
     } finally {
       setIsProcessing(false);
-      e.target.value = '';
+      e.currentTarget.value = '';
     }
   }, [validateFile, processLotteryData, employeeName]);
 
@@ -311,8 +342,6 @@ export default function LotteryImportSystem() {
         throw new Error('Серверийн алдаа гарлаа');
       }
 
-      const result = await response.json();
-      
       const latestDate = filteredData.reduce((latest, entry) => {
         const entryDate = new Date(entry.guildgeeniiOgnoo);
         return entryDate > new Date(latest) ? entry.guildgeeniiOgnoo : latest;
@@ -321,8 +350,9 @@ export default function LotteryImportSystem() {
       setLastSavedDate(latestDate);
       
       alert(`Амжилттай хадгаллаа! ${filteredData.length} гүйлгээ нэмэгдлээ.`);
-    } catch (err: any) {
-      alert('Хадгалахад алдаа гарлаа: ' + err.message);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Хадгалахад алдаа гарлаа';
+      alert('Хадгалахад алдаа гарлаа: ' + errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -365,14 +395,7 @@ export default function LotteryImportSystem() {
   }, []);
 
   if (loadingCar) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <RefreshCw className="w-16 h-16 text-yellow-400 mx-auto mb-4 animate-spin" />
-          <p className="text-xl text-white font-semibold">Уншиж байна...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -668,5 +691,14 @@ export default function LotteryImportSystem() {
         )}
       </div>
     </div>
+  );
+}
+
+// Main page component with Suspense
+export default function LotteryImportSystem() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <LotteryImportContent />
+    </Suspense>
   );
 }

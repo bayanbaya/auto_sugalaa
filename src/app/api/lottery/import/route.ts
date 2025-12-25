@@ -32,12 +32,44 @@ function calculateTicketCount(amount: number, ticketPrice: number) {
   return Math.floor((amount + ticketPrice * TOLERANCE) / ticketPrice);
 }
 
+interface LotteryImportRequest {
+  metadata: {
+    carId: string;
+    employeeName: string;
+    fileName?: string;
+    importDate?: string;
+    totalRecords?: number;
+    lastSavedDate?: string;
+  };
+  data: Array<{
+    guildgeeniiOgnoo: string;
+    salbar: string;
+    credit: number;
+    guildgeeniiUtga: string;
+    haritsanDans: string;
+    ehniilUldegdel: number;
+    etsiin_Uldegdel: number;
+    importDate: string;
+    rowNumber: number;
+  }>;
+}
+
+interface CarRow extends RowDataPacket {
+  id: string;
+  sold: number;
+  price: string | number;
+}
+
+interface CountRow extends RowDataPacket {
+  cnt: number;
+}
+
 /* ================= POST ================= */
 export async function POST(request: Request) {
   let connection: mysql.PoolConnection | null = null;
 
   try {
-    const body = await request.json();
+    const body = (await request.json()) as LotteryImportRequest;
     const { metadata, data } = body;
 
     if (!metadata?.carId || !metadata?.employeeName || !Array.isArray(data)) {
@@ -48,7 +80,7 @@ export async function POST(request: Request) {
     await connection.beginTransaction();
 
     /* ==== Машины мэдээлэл + PRICE ==== */
-    const [carRows] = await connection.query<RowDataPacket[]>(
+    const [carRows] = await connection.query<CarRow[]>(
       "SELECT id, sold, price FROM lotteryName WHERE id = ?",
       [metadata.carId]
     );
@@ -59,7 +91,7 @@ export async function POST(request: Request) {
     if (!ticketPrice) throw new Error("Ticket price буруу байна");
 
     /* ==== Одоогийн сугалааны sequence ==== */
-    const [seqRows] = await connection.query<RowDataPacket[]>(
+    const [seqRows] = await connection.query<CountRow[]>(
       "SELECT COUNT(*) cnt FROM mblottery WHERE carId = ?",
       [metadata.carId]
     );
@@ -81,7 +113,7 @@ export async function POST(request: Request) {
     `;
 
     /* ==== Counters ==== */
-    let totalTransactions = data.length;
+    const totalTransactions = data.length;
     let transactionsWithLottery = 0;
     let totalLotteries = 0;
 
@@ -150,11 +182,14 @@ export async function POST(request: Request) {
       },
     });
 
-  } catch (err: any) {
+  } catch (err) {
     if (connection) await connection.rollback();
-    console.error(err);
+    
+    const errorMessage = err instanceof Error ? err.message : "Үл мэдэгдэх алдаа гарлаа";
+    console.error("Lottery import error:", err);
+    
     return NextResponse.json(
-      { error: "Алдаа гарлаа", details: err.message },
+      { error: "Алдаа гарлаа", details: errorMessage },
       { status: 500 }
     );
   } finally {
