@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Car, ArrowRight, Search, RefreshCw, AlertCircle, Plus, Power, EyeOff } from 'lucide-react';
+import AdminHeader from '../components/AdminHeader';
 
 interface CarData {
   id: string;
@@ -108,42 +109,17 @@ export default function AdminPage() {
   }
 
   return (
+    <>
+    <AdminHeader 
+          filteredCars={filteredCars} 
+          onRefresh={fetchCars} 
+        />
+        
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4 sm:p-6">
+      
       <div className="max-w-7xl mx-auto">
         {/* Гарчиг */}
-        <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-2xl shadow-2xl p-6 mb-6 border border-yellow-400">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <Car className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-extrabold text-white">
-                  Машины жагсаалт
-                </h1>
-                <p className="text-white/90 text-sm mt-1">
-                  Сугалаанд оролцож буй машинууд ({filteredCars.length})
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => router.push('/admin/add-car')}
-                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-all shadow-lg"
-              >
-                <Plus className="w-4 h-4" />
-                Машин нэмэх
-              </button>
-              <button
-                onClick={fetchCars}
-                className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-xl hover:bg-white/30 transition-all shadow-lg"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Шинэчлэх
-              </button>
-            </div>
-          </div>
-        </div>
+       
 
         {/* Алдаа */}
         {error && (
@@ -307,5 +283,6 @@ export default function AdminPage() {
         )}
       </div>
     </div>
+    </>
   );
 }
