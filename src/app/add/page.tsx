@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import * as XLSX from 'xlsx';
-import { Upload, FileSpreadsheet, CheckCircle, XCircle, Trash2, RefreshCw, Save, Edit2, Check, X, ArrowLeft, Car, AlertCircle } from 'lucide-react';
+import { Upload, FileSpreadsheet, XCircle, Trash2, RefreshCw, Save, ArrowLeft, Car, AlertCircle, Sparkles } from 'lucide-react';
 
 interface LotteryEntry {
   guildgeeniiOgnoo: string;
@@ -73,9 +73,23 @@ function LotteryImportContent() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedDate, setLastSavedDate] = useState<string | null>(null);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editValue, setEditValue] = useState('');
   const [employeeName, setEmployeeName] = useState('');
+  const [isGeneratingLottery, setIsGeneratingLottery] = useState(false);
+  const [lotteryStats, setLotteryStats] = useState<{
+    totalLotteries: number;
+    unprocessed: number;
+  } | null>(null);
+  const [ticketPrice, setTicketPrice] = useState<number>(20000);
+  const [lotteryPreview, setLotteryPreview] = useState<{
+    totalLotteries: number;
+    validTransactions: number;
+    skippedTransactions: number;
+  } | null>(null);
+  const [saveResult, setSaveResult] = useState<{
+    totalTransactions: number;
+    totalLotteries: number;
+    skippedNoPhone: number;
+  } | null>(null);
 
   // Машины мэдээлэл татах
   useEffect(() => {
@@ -105,6 +119,28 @@ function LotteryImportContent() {
     };
 
     fetchCarData();
+  }, [carId]);
+
+  // Сугалааны статистик татах
+  useEffect(() => {
+    const fetchLotteryStats = async () => {
+      if (!carId) return;
+
+      try {
+        const response = await fetch(`/api/lottery/generate?carId=${carId}`);
+        if (!response.ok) return;
+
+        const data = await response.json();
+        setLotteryStats({
+          totalLotteries: data.statistics.totalLotteries,
+          unprocessed: data.statistics.unprocessedTransactions,
+        });
+      } catch (err) {
+        console.error('Failed to fetch lottery stats:', err);
+      }
+    };
+
+    fetchLotteryStats();
   }, [carId]);
 
   // Статистик
@@ -177,22 +213,22 @@ function LotteryImportContent() {
   }, []);
 
   // Excel боловсруулах
-  const processLotteryData = useCallback((rawData: ExcelRow[]) => {
+  const processLotteryData = useCallback(async (rawData: ExcelRow[]) => {
     if (rawData.length < 9) {
       throw new Error('Excel файл хоосон эсвэл буруу форматтай байна. 9-р мөрнөөс өгөгдөл эхлэх ёстой.');
     }
 
     const dataRows = rawData.slice(8).filter(row => {
       if (!row || row.length === 0) return false;
-      
+
       const firstCell = String(row[0] || '').trim().toLowerCase();
       if (firstCell.includes('нийт') || firstCell === '' || firstCell === 'undefined') {
         return false;
       }
-      
+
       return true;
     });
-    
+
     const lotteryEntries: LotteryEntry[] = [];
 
     dataRows.forEach((row, index) => {
@@ -208,7 +244,33 @@ function LotteryImportContent() {
     }
 
     setParsedData(lotteryEntries);
-  }, [validateAndCleanEntry]);
+
+    // Preview: Хэдэн сугалаа үүсэх вэ гэдгийг тооцоолох
+    try {
+      const previewResponse = await fetch('/api/lottery/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transactions: lotteryEntries.map(entry => ({
+            credit: entry.credit,
+            guildgeeniiUtga: entry.guildgeeniiUtga,
+          })),
+          ticketPrice,
+        }),
+      });
+
+      if (previewResponse.ok) {
+        const previewData = await previewResponse.json();
+        setLotteryPreview({
+          totalLotteries: previewData.summary.totalLotteries,
+          validTransactions: previewData.summary.validTransactions,
+          skippedTransactions: previewData.summary.skippedTransactions,
+        });
+      }
+    } catch (err) {
+      console.error('Preview failed:', err);
+    }
+  }, [validateAndCleanEntry, ticketPrice]);
 
   // Файл upload
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -224,8 +286,6 @@ function LotteryImportContent() {
     setIsProcessing(true);
     setError('');
     setParsedData([]);
-    setEditingIndex(null);
-    setEditValue('');
 
     try {
       validateFile(uploadedFile);
@@ -260,27 +320,6 @@ function LotteryImportContent() {
       e.currentTarget.value = '';
     }
   }, [validateFile, processLotteryData, employeeName]);
-
-  // Засах
-  const startEdit = useCallback((index: number, currentValue: string) => {
-    setEditingIndex(index);
-    setEditValue(currentValue);
-  }, []);
-
-  const saveEdit = useCallback(() => {
-    if (editingIndex !== null) {
-      const updated = [...parsedData];
-      updated[editingIndex].guildgeeniiUtga = editValue;
-      setParsedData(updated);
-      setEditingIndex(null);
-      setEditValue('');
-    }
-  }, [editingIndex, editValue, parsedData]);
-
-  const cancelEdit = useCallback(() => {
-    setEditingIndex(null);
-    setEditValue('');
-  }, []);
 
   // Датабазд хадгалах
   const saveToDatabase = useCallback(async () => {
@@ -342,14 +381,31 @@ function LotteryImportContent() {
         throw new Error('Серверийн алдаа гарлаа');
       }
 
+      const result = await response.json();
+
       const latestDate = filteredData.reduce((latest, entry) => {
         const entryDate = new Date(entry.guildgeeniiOgnoo);
         return entryDate > new Date(latest) ? entry.guildgeeniiOgnoo : latest;
       }, filteredData[0].guildgeeniiOgnoo);
-      
+
       setLastSavedDate(latestDate);
-      
-      alert(`Амжилттай хадгаллаа! ${filteredData.length} гүйлгээ нэмэгдлээ.`);
+
+      // Save result for display
+      if (result.data) {
+        setSaveResult({
+          totalTransactions: result.data.totalTransactions,
+          totalLotteries: result.data.totalLotteries,
+          skippedNoPhone: result.data.skippedNoPhone || 0,
+        });
+      }
+
+      // Show beautiful success message
+      const message = `✅ Амжилттай хадгаллаа!\n\n` +
+        `📊 Нийт гүйлгээ: ${result.data?.totalTransactions || filteredData.length}\n` +
+        `🎫 Үүссэн сугалаа: ${result.data?.totalLotteries || 0}\n` +
+        (result.data?.skippedNoPhone > 0 ? `⚠️ Утасны дугаар байхгүй: ${result.data.skippedNoPhone}` : '');
+
+      alert(message);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Хадгалахад алдаа гарлаа';
       alert('Хадгалахад алдаа гарлаа: ' + errorMessage);
@@ -364,34 +420,7 @@ function LotteryImportContent() {
     setParsedData([]);
     setError('');
     setLastSavedDate(null);
-    setEditingIndex(null);
-    setEditValue('');
-  }, []);
-
-  // Форматласан валют
-  const formatCurrency = useCallback((amount: number) => {
-    return new Intl.NumberFormat('mn-MN', {
-      style: 'decimal',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(amount) + '₮';
-  }, []);
-
-  // Огноо форматлах
-  const formatDate = useCallback((dateStr: string) => {
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleString('mn-MN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
-    } catch {
-      return dateStr;
-    }
+    setLotteryPreview(null);
   }, []);
 
   if (loadingCar) {
@@ -552,124 +581,102 @@ function LotteryImportContent() {
           </div>
         )}
 
-        {/* Статистик */}
-        {stats && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-6 mb-6 border border-white/20">
+        {/* Сугалааны preview */}
+        {lotteryPreview && stats && (
+          <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl shadow-2xl p-6 mb-6 border border-emerald-500">
             <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
               <div className="flex items-center gap-3">
-                <CheckCircle className="w-7 h-7 text-green-400" />
-                <h2 className="text-2xl font-bold text-white">Нийт мэдээлэл</h2>
+                <Sparkles className="w-7 h-7 text-yellow-300" />
+                <h2 className="text-2xl font-bold text-white">Сугалааны урьдчилсан мэдээлэл</h2>
               </div>
               {employeeName && (
-                <div className="flex items-center gap-2 bg-yellow-500/20 backdrop-blur-sm px-4 py-2 rounded-lg border border-yellow-400">
-                  <span className="text-sm font-semibold text-yellow-300">Ажилтан:</span>
-                  <span className="text-sm font-bold text-yellow-200">{employeeName}</span>
+                <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/30">
+                  <span className="text-sm font-semibold text-emerald-100">Ажилтан:</span>
+                  <span className="text-sm font-bold text-white">{employeeName}</span>
                 </div>
               )}
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
-                <p className="text-sm opacity-90 mb-2">Нийт гүйлгээ</p>
-                <p className="text-4xl font-bold">{stats.totalEntries}</p>
+
+            {/* Ticket Price Input */}
+            <div className="mb-6 bg-white/10 backdrop-blur-sm rounded-xl p-4">
+              <label className="block text-sm font-semibold text-white mb-2">
+                Нэг сугалааны үнэ (₮)
+              </label>
+              <input
+                type="number"
+                value={ticketPrice}
+                onChange={async (e) => {
+                  const newPrice = parseInt(e.target.value) || 20000;
+                  setTicketPrice(newPrice);
+
+                  // Re-calculate preview with new price
+                  if (parsedData.length > 0) {
+                    try {
+                      const previewResponse = await fetch('/api/lottery/preview', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          transactions: parsedData.map(entry => ({
+                            credit: entry.credit,
+                            guildgeeniiUtga: entry.guildgeeniiUtga,
+                          })),
+                          ticketPrice: newPrice,
+                        }),
+                      });
+
+                      if (previewResponse.ok) {
+                        const previewData = await previewResponse.json();
+                        setLotteryPreview({
+                          totalLotteries: previewData.summary.totalLotteries,
+                          validTransactions: previewData.summary.validTransactions,
+                          skippedTransactions: previewData.summary.skippedTransactions,
+                        });
+                      }
+                    } catch (err) {
+                      console.error('Re-preview failed:', err);
+                    }
+                  }
+                }}
+                min="1"
+                className="w-full px-4 py-3 bg-white/90 border-2 border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all text-gray-900 font-bold text-lg"
+              />
+              <p className="text-xs text-emerald-100 mt-1">
+                💡 Үнийг өөрчлөхөд сугалааны тоо автоматаар шинэчлэгдэнэ
+              </p>
+            </div>
+
+            {/* Statistics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                <p className="text-sm text-emerald-100 mb-2">📊 Нийт гүйлгээ</p>
+                <p className="text-4xl font-bold text-white">{stats.totalEntries}</p>
               </div>
-              <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
-                <p className="text-sm opacity-90 mb-2">Нийт орлого</p>
-                <p className="text-3xl font-bold">{formatCurrency(stats.totalAmount)}</p>
+
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                <p className="text-sm text-emerald-100 mb-2">✅ Үүсэх сугалаа</p>
+                <p className="text-4xl font-bold text-yellow-300">{lotteryPreview.totalLotteries}</p>
               </div>
+
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                <p className="text-sm text-emerald-100 mb-2">⚠️ Алгасагдах гүйлгээ</p>
+                <p className="text-4xl font-bold text-red-300">{lotteryPreview.skippedTransactions}</p>
+              </div>
+            </div>
+
+            {/* Additional Info */}
+            <div className="mt-6 bg-yellow-500/10 backdrop-blur-sm rounded-xl p-4 border border-yellow-400/30">
+              <p className="text-sm text-yellow-100">
+                💡 <strong>{lotteryPreview.validTransactions}</strong> гүйлгээнээс <strong>{lotteryPreview.totalLotteries}</strong> сугалаа үүснэ.
+                {lotteryPreview.skippedTransactions > 0 && ` ${lotteryPreview.skippedTransactions} гүйлгээ хэтэрхий бага дүнтэй тул алгасагдана.`}
+              </p>
             </div>
           </div>
         )}
 
-        {/* Хүснэгт */}
-        {parsedData.length > 0 && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-6 border border-white/20 mb-6">
-            <div className="flex items-center gap-3 mb-6">
-              <FileSpreadsheet className="w-7 h-7 text-yellow-400" />
-              <h2 className="text-2xl font-bold text-white">Гүйлгээний жагсаалт</h2>
-            </div>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white">
-                    <th className="px-4 py-3 text-left text-sm font-semibold">№</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold">Огноо</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold">Салбар</th>
-                    <th className="px-4 py-3 text-right text-sm font-semibold">Дүн</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold">Гүйлгээний утга</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold">Данс</th>
-                    <th className="px-4 py-3 text-center text-sm font-semibold">Үйлдэл</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {parsedData.map((entry, index) => (
-                    <tr 
-                      key={index} 
-                      className={`border-b border-white/10 hover:bg-white/5 transition-colors ${
-                        index % 2 === 0 ? 'bg-white/5' : 'bg-transparent'
-                      }`}
-                    >
-                      <td className="px-4 py-3 text-sm text-gray-300">{index + 1}</td>
-                      <td className="px-4 py-3 text-sm text-gray-300">{formatDate(entry.guildgeeniiOgnoo)}</td>
-                      <td className="px-4 py-3 text-sm text-gray-300">{entry.salbar}</td>
-                      <td className="px-4 py-3 text-sm text-right font-semibold text-green-400">
-                        {formatCurrency(entry.credit)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-300">
-                        {editingIndex === index ? (
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="text"
-                              value={editValue}
-                              onChange={(e) => setEditValue(e.target.value)}
-                              className="flex-1 px-2 py-1 bg-white/90 border border-yellow-400 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 text-gray-900"
-                              autoFocus
-                            />
-                            <button
-                              onClick={saveEdit}
-                              className="p-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-                              title="Хадгалах"
-                            >
-                              <Check className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={cancelEdit}
-                              className="p-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-                              title="Цуцлах"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="max-w-xs truncate block" title={entry.guildgeeniiUtga}>
-                            {entry.guildgeeniiUtga}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-300">{entry.haritsanDans}</td>
-                      <td className="px-4 py-3 text-center">
-                        {editingIndex !== index && (
-                          <button
-                            onClick={() => startEdit(index, entry.guildgeeniiUtga)}
-                            className="p-1.5 bg-yellow-500/20 text-yellow-400 rounded hover:bg-yellow-500/30 transition-colors"
-                            title="Засах"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
 
         {/* Хадгалах товч */}
-        {parsedData.length > 0 && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-6 border border-white/20">
+        {parsedData.length > 0 && !saveResult && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-6 border border-white/20 space-y-4">
             <button
               onClick={saveToDatabase}
               disabled={isSaving}
@@ -687,6 +694,158 @@ function LotteryImportContent() {
                 </>
               )}
             </button>
+          </div>
+        )}
+
+        {/* Success Result - Хадгалсны дараах үр дүн */}
+        {saveResult && (
+          <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-2xl p-8 border border-green-400 animate-in slide-in-from-bottom">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-full">
+                <Save className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h2 className="text-3xl font-bold text-white">✅ Амжилттай хадгаллаа!</h2>
+                <p className="text-green-100 text-sm mt-1">Гүйлгээний мэдээлэл database-д хадгалагдлаа</p>
+              </div>
+            </div>
+
+            {/* Statistics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                <p className="text-sm text-green-100 mb-2">📊 Нийт гүйлгээ</p>
+                <p className="text-4xl font-bold text-white">{saveResult.totalTransactions}</p>
+              </div>
+
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                <p className="text-sm text-green-100 mb-2">🎫 Үүссэн сугалаа</p>
+                <p className="text-4xl font-bold text-yellow-300">{saveResult.totalLotteries}</p>
+              </div>
+
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                <p className="text-sm text-green-100 mb-2">⚠️ Алгасагдсан</p>
+                <p className="text-4xl font-bold text-red-300">{saveResult.skippedNoPhone}</p>
+              </div>
+            </div>
+
+            {/* Info Box */}
+            <div className="bg-yellow-500/10 backdrop-blur-sm rounded-xl p-4 border border-yellow-400/30 mb-6">
+              <p className="text-sm text-yellow-100">
+                💡 <strong>{saveResult.skippedNoPhone}</strong> гүйлгээ утасны дугаар байхгүйгээс алгасагдсан.
+                {saveResult.skippedNoPhone > 0 && ' Эдгээр гүйлгээнд сугалаа үүсээгүй.'}
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  setSaveResult(null);
+                  setParsedData([]);
+                  setLotteryPreview(null);
+                  setFile(null);
+                }}
+                className="flex-1 px-6 py-3 bg-white/20 backdrop-blur-sm text-white rounded-xl hover:bg-white/30 transition-all font-semibold"
+              >
+                Дахин импортлох
+              </button>
+              <button
+                onClick={() => router.push('/admin')}
+                className="flex-1 px-6 py-3 bg-white text-green-600 rounded-xl hover:bg-green-50 transition-all font-semibold"
+              >
+                Буцах
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Сугалаа үүсгэх хэсэг */}
+        {carData && lotteryStats && (
+          <div className="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-2xl shadow-2xl p-6 border border-purple-500">
+            <div className="flex items-center gap-3 mb-4">
+              <Sparkles className="w-6 h-6 text-yellow-300" />
+              <h2 className="text-2xl font-bold text-white">Сугалаа үүсгэх</h2>
+            </div>
+
+            {/* Статистик */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                <p className="text-sm text-purple-200 mb-1">Үүссэн сугалаа</p>
+                <p className="text-3xl font-bold text-white">{lotteryStats.totalLotteries}</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                <p className="text-sm text-purple-200 mb-1">Боловсруулаагүй гүйлгээ</p>
+                <p className="text-3xl font-bold text-yellow-300">{lotteryStats.unprocessed}</p>
+              </div>
+            </div>
+
+            {/* Үүсгэх товч */}
+            <button
+              onClick={async () => {
+                if (!carData) return;
+
+                const ticketPrice = prompt('Нэг сугалааны үнийг оруулна уу (₮):', '20000');
+                if (!ticketPrice || isNaN(Number(ticketPrice))) {
+                  alert('Буруу үнэ оруулсан байна');
+                  return;
+                }
+
+                setIsGeneratingLottery(true);
+
+                try {
+                  const response = await fetch('/api/lottery/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      carId: parseInt(carId!),
+                      ticketPrice: parseInt(ticketPrice),
+                      processAll: false,
+                    }),
+                  });
+
+                  const result = await response.json();
+
+                  if (result.success) {
+                    alert(`✅ ${result.statistics.generatedLotteries} сугалаа үүслээ!\n\n` +
+                          `• Боловсруулсан гүйлгээ: ${result.statistics.processedTransactions}\n` +
+                          `• Алгасагдсан: ${result.statistics.skippedTransactions}`);
+
+                    // Refresh stats
+                    const statsResponse = await fetch(`/api/lottery/generate?carId=${carId}`);
+                    const statsData = await statsResponse.json();
+                    setLotteryStats({
+                      totalLotteries: statsData.statistics.totalLotteries,
+                      unprocessed: statsData.statistics.unprocessedTransactions,
+                    });
+                  } else {
+                    alert(`❌ Алдаа гарлаа: ${result.error}`);
+                  }
+                } catch (err) {
+                  alert('Серверийн алдаа гарлаа');
+                  console.error(err);
+                } finally {
+                  setIsGeneratingLottery(false);
+                }
+              }}
+              disabled={isGeneratingLottery || lotteryStats.unprocessed === 0}
+              className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-400 hover:to-emerald-500 transition-all shadow-lg hover:shadow-green-500/50 font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isGeneratingLottery ? (
+                <>
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                  Үүсгэж байна...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-5 h-5" />
+                  Сугалаа үүсгэх ({lotteryStats.unprocessed} гүйлгээ)
+                </>
+              )}
+            </button>
+
+            <p className="text-xs text-purple-200 mt-3 text-center">
+              💡 Зөвхөн шинэ (боловсруулаагүй) гүйлгээнүүдээс сугалаа үүснэ
+            </p>
           </div>
         )}
       </div>

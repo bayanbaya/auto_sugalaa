@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import mysql, { RowDataPacket, ResultSetHeader } from "mysql2/promise";
+import { extractPhoneNumber } from "@/lib/lotteryCalculator";
 
 /* ================= DB POOL ================= */
 const pool = mysql.createPool({
@@ -116,6 +117,7 @@ export async function POST(request: Request) {
     const totalTransactions = data.length;
     let transactionsWithLottery = 0;
     let totalLotteries = 0;
+    let skippedNoPhone = 0; // Утасны дугаар байхгүйгээс алгасагдсан
 
     /* ==== LOOP ==== */
     for (const row of data) {
@@ -140,6 +142,16 @@ export async function POST(request: Request) {
       const ticketCount = calculateTicketCount(row.credit, ticketPrice);
 
       if (ticketCount > 0) {
+        // Extract phone number from description
+        const phoneNumber = extractPhoneNumber(row.guildgeeniiUtga);
+
+        // ❌ ШААРДЛАГАТАЙ: Утасны дугаар байхгүй бол сугалаа үүсгэхгүй!
+        if (!phoneNumber) {
+          console.warn(`No phone number found for transaction ${txResult.insertId}: "${row.guildgeeniiUtga}"`);
+          skippedNoPhone++;
+          continue; // Skip this transaction
+        }
+
         transactionsWithLottery++;
 
         for (let i = 0; i < ticketCount; i++) {
@@ -151,8 +163,8 @@ export async function POST(request: Request) {
             toMySQLDatetime(new Date()),
             txResult.insertId,
             metadata.carId,
-            row.credit,          // ✅ гүйлгээний дүн
-            row.guildgeeniiUtga, // утас
+            row.credit,    // ✅ гүйлгээний дүн
+            phoneNumber,   // ✅ Зөвхөн утасны дугаар (8 digits) - ШААРДЛАГАТАЙ
           ]);
 
           totalLotteries++;
@@ -179,6 +191,7 @@ export async function POST(request: Request) {
         totalTransactions,           // нийт гүйлгээ
         transactionsWithLottery,     // сугалаа үүссэн гүйлгээ
         totalLotteries,              // нийт сугалаа
+        skippedNoPhone,              // утасны дугаар байхгүйгээс алгасагдсан
       },
     });
 

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Car, ArrowRight, Search, RefreshCw, AlertCircle } from 'lucide-react';
+import { Car, ArrowRight, Search, RefreshCw, AlertCircle, Plus, Power, EyeOff } from 'lucide-react';
 
 interface CarData {
   id: string;
@@ -14,6 +14,7 @@ interface CarData {
   carName: string;
   total: number;
   sold: number;
+  status?: string;
 }
 
 export default function AdminPage() {
@@ -66,6 +67,35 @@ export default function AdminPage() {
     return String(price).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
+  // Төлөв өөрчлөх
+  const handleToggleStatus = async (carId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+
+    try {
+      const response = await fetch('/api/cars/update-status', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: carId, status: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Төлөв өөрчлөхөд алдаа гарлаа');
+      }
+
+      // Update local state
+      setCars((prevCars) =>
+        prevCars.map((car) =>
+          car.id === carId ? { ...car, status: newStatus } : car
+        )
+      );
+    } catch (err) {
+      console.error('Toggle status error:', err);
+      setError('Төлөв өөрчлөхөд алдаа гарлаа');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
@@ -96,13 +126,22 @@ export default function AdminPage() {
                 </p>
               </div>
             </div>
-            <button
-              onClick={fetchCars}
-              className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-xl hover:bg-white/30 transition-all shadow-lg"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Шинэчлэх
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.push('/admin/add-car')}
+                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-all shadow-lg"
+              >
+                <Plus className="w-4 h-4" />
+                Машин нэмэх
+              </button>
+              <button
+                onClick={fetchCars}
+                className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-xl hover:bg-white/30 transition-all shadow-lg"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Шинэчлэх
+              </button>
+            </div>
           </div>
         </div>
 
@@ -146,21 +185,29 @@ export default function AdminPage() {
               >
                 {/* Зураг */}
                 <div className="relative h-56 bg-gradient-to-br from-gray-700 to-gray-800">
-                  {car.img ? (
-                    <img 
+                  {car.img && car.img.trim() !== '' ? (
+                    <img
                       src={car.img}
                       alt={car.carName}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       onError={(e) => {
+                        console.error(`Image load failed for car ${car.id}: ${car.img}`);
                         e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                        const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                        if (fallback) {
+                          fallback.classList.remove('hidden');
+                          fallback.classList.add('flex');
+                        }
                       }}
                     />
                   ) : null}
-                  <div className="hidden w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-800">
-                    <Car className="w-16 h-16 text-gray-600" />
+                  <div className={`${car.img && car.img.trim() !== '' ? 'hidden' : 'flex'} w-full h-full items-center justify-center bg-gradient-to-br from-gray-700 to-gray-800`}>
+                    <div className="text-center">
+                      <Car className="w-16 h-16 text-gray-600 mx-auto mb-2" />
+                      <p className="text-xs text-gray-500">Зураг байхгүй</p>
+                    </div>
                   </div>
-                  
+
                   {/* Badge - Зарагдсан хувь */}
                   <div className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 to-yellow-500 px-3 py-1 rounded-full shadow-lg">
                     <span className="text-xs font-bold text-gray-900">{progress}%</span>
@@ -195,14 +242,41 @@ export default function AdminPage() {
                       <span>Үлдсэн: {remaining}</span>
                     </div>
                     <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
-                      <div 
+                      <div
                         className="h-3 rounded-full transition-all duration-500"
-                        style={{ 
+                        style={{
                           width: `${progress}%`,
                           backgroundColor: progressColor
                         }}
                       />
                     </div>
+                  </div>
+
+                  {/* Status Badge */}
+                  <div className="mb-3">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleStatus(car.id, car.status || 'active');
+                      }}
+                      className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        car.status === 'inactive'
+                          ? 'bg-gray-600/30 border border-gray-500 text-gray-300 hover:bg-gray-600/50'
+                          : 'bg-green-500/20 border border-green-500 text-green-300 hover:bg-green-500/30'
+                      }`}
+                    >
+                      {car.status === 'inactive' ? (
+                        <>
+                          <EyeOff className="w-3 h-3" />
+                          Идэвхгүй (нууцлагдсан)
+                        </>
+                      ) : (
+                        <>
+                          <Power className="w-3 h-3" />
+                          Идэвхтэй (харагдаж байна)
+                        </>
+                      )}
+                    </button>
                   </div>
 
                   {/* Товчлуур */}
