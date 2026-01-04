@@ -16,7 +16,7 @@ const pool = mysql.createPool({
 const TOLERANCE = 0.001; // 0.1%
 
 function generateLotteryNumber(carId: string, seq: number) {
-  return `L-${carId}-${String(seq).padStart(6, "0")}`;
+  return `L${carId}-${String(seq).padStart(6, "0")}`;
 }
 
 function toMySQLDatetime(date: string | Date) {
@@ -119,6 +119,11 @@ export async function POST(request: Request) {
     let totalLotteries = 0;
     let skippedNoPhone = 0; // Утасны дугаар байхгүйгээс алгасагдсан
 
+    /* ==== Tracking arrays ==== */
+    const allTransactions: any[] = [];
+    const allLotteries: any[] = [];
+    const skippedDetails: any[] = [];
+
     /* ==== LOOP ==== */
     for (const row of data) {
       const [txResult] = await connection.query<ResultSetHeader>(
@@ -140,6 +145,8 @@ export async function POST(request: Request) {
       );
 
       const ticketCount = calculateTicketCount(row.credit, ticketPrice);
+      let hasLottery = false;
+      let skipReason = '';
 
       if (ticketCount > 0) {
         // Extract phone number from description
@@ -149,27 +156,58 @@ export async function POST(request: Request) {
         if (!phoneNumber) {
           console.warn(`No phone number found for transaction ${txResult.insertId}: "${row.guildgeeniiUtga}"`);
           skippedNoPhone++;
-          continue; // Skip this transaction
+          skipReason = 'Утасны дугаар олдсонгүй';
+
+          // Алгасагдсан гүйлгээг tracking
+          skippedDetails.push({
+            ...row,
+            skipReason
+          });
+        } else {
+          transactionsWithLottery++;
+          hasLottery = true;
+
+          for (let i = 0; i < ticketCount; i++) {
+            currentSeq++;
+            const lotteryNumber = generateLotteryNumber(metadata.carId, currentSeq);
+            const createdAt = toMySQLDatetime(new Date());
+
+            await connection.query(insertLotteryQuery, [
+              lotteryNumber,
+              createdAt,
+              txResult.insertId,
+              metadata.carId,
+              row.credit,    // ✅ гүйлгээний дүн
+              phoneNumber,   // ✅ Зөвхөн утасны дугаар (8 digits) - ШААРДЛАГАТАЙ
+            ]);
+
+            totalLotteries++;
+
+            // Сугалааны мэдээллийг tracking
+            allLotteries.push({
+              lotteryNumber,
+              createdAt,
+              bankTransactionId: txResult.insertId,
+              carId: metadata.carId,
+              transactionAmount: row.credit,
+              phoneNumber
+            });
+          }
         }
-
-        transactionsWithLottery++;
-
-        for (let i = 0; i < ticketCount; i++) {
-          currentSeq++;
-          const lotteryNumber = generateLotteryNumber(metadata.carId, currentSeq);
-
-          await connection.query(insertLotteryQuery, [
-            lotteryNumber,
-            toMySQLDatetime(new Date()),
-            txResult.insertId,
-            metadata.carId,
-            row.credit,    // ✅ гүйлгээний дүн
-            phoneNumber,   // ✅ Зөвхөн утасны дугаар (8 digits) - ШААРДЛАГАТАЙ
-          ]);
-
-          totalLotteries++;
-        }
+      } else {
+        skipReason = 'Мөнгөн дүн хүрэлцэхгүй';
+        skippedDetails.push({
+          ...row,
+          skipReason
+        });
       }
+
+      // Бүх гүйлгээг tracking
+      allTransactions.push({
+        ...row,
+        id: txResult.insertId,
+        islottery: hasLottery ? 1 : 0
+      });
     }
 
     /* ==== SOLD UPDATE ==== */
@@ -182,6 +220,16 @@ export async function POST(request: Request) {
 
     await connection.commit();
 
+    // Шалтгаан бэлтгэх
+    const skippedReasons: string[] = [];
+    if (skippedNoPhone > 0) {
+      skippedReasons.push(`${skippedNoPhone} гүйлгээ утасны дугаар олдсонгүй`);
+    }
+    const skippedLowAmount = skippedDetails.length - skippedNoPhone;
+    if (skippedLowAmount > 0) {
+      skippedReasons.push(`${skippedLowAmount} гүйлгээ мөнгөн дүн хүрэлцэхгүй`);
+    }
+
     return NextResponse.json({
       success: true,
       message: "Амжилттай хадгаллаа",
@@ -191,7 +239,14 @@ export async function POST(request: Request) {
         totalTransactions,           // нийт гүйлгээ
         transactionsWithLottery,     // сугалаа үүссэн гүйлгээ
         totalLotteries,              // нийт сугалаа
+        skippedTransactions: skippedDetails.length, // алгасагдсан нийт
         skippedNoPhone,              // утасны дугаар байхгүйгээс алгасагдсан
+        skippedReasons,              // шалтгаануud
+
+        // Дэлгэрэнгүй мэдээлэл
+        transactions: allTransactions,
+        lotteries: allLotteries,
+        skippedDetails: skippedDetails
       },
     });
 

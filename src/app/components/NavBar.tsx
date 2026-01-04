@@ -7,7 +7,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   // /add route дээр Navbar нуух
-  if (pathname.startsWith("/add") || pathname.startsWith("/admin")) {
+  if (pathname.startsWith("/add") || pathname.startsWith("/admin") || pathname.startsWith("/login")) {
     return null;
   }
 
@@ -29,11 +29,11 @@ export default function Navbar() {
         </Link>
 
         {/* Ирээдүйд нэмэх цэс (optional) */}
-        {/* 
+        
         <div className="hidden sm:flex space-x-6">
-          <Link href="/about" className="text-white/80 hover:text-white text-sm">Бидний тухай</Link>
+          <Link href="/admin/login" className="text-white/80 hover:text-white text-sm">Нэвтрэх</Link>
         </div> 
-        */}
+       
       </div>
     </nav>
   );
