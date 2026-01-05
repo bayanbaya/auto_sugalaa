@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { AdminHeader } from '../components/AdminHeader';
 import { AddCarModal } from '../components/AddCarModal';
+import { AdminSidebar } from '../components/AdminSidebar';
 
 // --- Types ---
 interface CarData {
@@ -135,15 +136,19 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-600">
-      
-      <AdminHeader
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        onRefresh={fetchCars}
-        totalCars={filteredCars.length}
-        onAddClick={() => setIsAddCarModalOpen(true)}
-      />
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-600 flex">
+      {/* Sidebar нэмэгдсэн */}
+      <AdminSidebar />
+
+      {/* Main Content - Sidebar-ийн өргөнөөр margin авсан (lg:pl-64) */}
+      <div className="flex-1 lg:pl-64">
+        <AdminHeader
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          onRefresh={fetchCars}
+          totalCars={filteredCars.length}
+          onAddClick={() => setIsAddCarModalOpen(true)}
+        />
 
       <AddCarModal
         isOpen={isAddCarModalOpen}
@@ -248,25 +253,38 @@ export default function AdminPage() {
                   </div>
 
                   {/* Info Grid */}
-                  <div className="grid grid-cols-2 gap-y-3 gap-x-4 mb-5">
-                    <div>
-                      <p className="text-xs text-slate-400 font-medium uppercase tracking-wide mb-0.5">Эзэмшигч</p>
-                      <div className="flex items-center gap-1.5 text-slate-700 font-semibold">
-                        <Users className="w-3.5 h-3.5 text-slate-400" />
-                        <span className="truncate">{car.ibanName}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-400 font-medium uppercase tracking-wide mb-0.5">Данс</p>
-                      <p className="text-slate-700 font-mono text-sm font-semibold truncate bg-slate-50 px-2 py-0.5 rounded border border-slate-100 inline-block">
-                        {car.iban}
-                      </p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-xs text-slate-400 font-medium uppercase tracking-wide mb-0.5">Үнэ</p>
-                      <p className="text-lg font-bold text-emerald-600">{formatPrice(car.price)}₮</p>
+                <div className="grid grid-cols-3 gap-x-4 mb-5 items-end">
+                  <div>
+                    <p className="text-xs text-slate-400 font-medium uppercase tracking-wide mb-0.5">
+                      Эзэмшигч
+                    </p>
+                    <div className="flex items-center gap-1.5 text-slate-700 font-semibold">
+                      <Users className="h-3.5 text-slate-400" />
+                      <span className="truncate">
+                        {car.ibanName}
+                      </span>
                     </div>
                   </div>
+
+                  <div>
+                    <p className="text-xs text-slate-400 font-medium uppercase tracking-wide mb-0.5">
+                      Данс
+                    </p>
+                    <p className="text-slate-700 font-mono text-sm font-semibold truncate bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+                      {car.iban}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-slate-400 font-medium uppercase tracking-wide mb-0.5">
+                      Үнэ
+                    </p>
+                    <p className="text-lg font-bold text-emerald-600 whitespace-nowrap">
+                      {formatPrice(car.price)}₮
+                    </p>
+                  </div>
+                </div>
+
 
                   {/* Progress Bar */}
                   <div className="mb-5 bg-slate-50 rounded-xl p-3 border border-slate-100">
@@ -322,6 +340,7 @@ export default function AdminPage() {
           </div>
         )}
       </main>
+      </div>
     </div>
   );
 }
