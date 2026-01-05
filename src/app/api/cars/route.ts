@@ -29,7 +29,7 @@ export async function GET() {
   try {
     // RowDataPacket interface ашиглан type safety хангах
     const [rows] = await pool.query<RowDataPacket[]>(
-      "SELECT id, img, carName, iban, ibanName, price, fbLink, total, sold FROM lotteryName"
+      "SELECT id, img, carName, iban, ibanName, price, fbLink, total, sold FROM lotteryName WHERE STATUS = 'active'"
     );
 
     // fill хувь тооцоолж, Car төрөлд хөрвүүлэх

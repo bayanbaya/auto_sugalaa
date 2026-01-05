@@ -1,11 +1,11 @@
 import { LayoutGrid, Plus, RefreshCw, Search } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 type AdminHeaderProps = {
   searchTerm: string;
   setSearchTerm: (s: string) => void;
   onRefresh: () => void;
   totalCars: number;
+  onAddClick: () => void;
 };
 
 export const AdminHeader = ({
@@ -13,8 +13,8 @@ export const AdminHeader = ({
   setSearchTerm,
   onRefresh,
   totalCars,
+  onAddClick,
 }: AdminHeaderProps) => {
-  const router = useRouter();
 
   return (
     <div className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
@@ -60,7 +60,7 @@ export const AdminHeader = ({
             </button>
 
             <button
-              onClick={() => router.push("/admin/add-car")}
+              onClick={onAddClick}
               className="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 font-medium active:scale-95"
             >
               <Plus className="w-5 h-5" />

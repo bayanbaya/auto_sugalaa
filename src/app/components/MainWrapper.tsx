@@ -10,7 +10,7 @@ export default function MainWrapper({
   const pathname = usePathname();
 
   const mainClass = "flex-grow px-6 py-12 pt-0";
-  const noPaddingRoutes = ["/add", "/admin", "/admin/add-car", "/login"];
+  const noPaddingRoutes = ["/add", "/admin", "/login"];
 
   const shouldApplyClass = !noPaddingRoutes.includes(pathname);
 

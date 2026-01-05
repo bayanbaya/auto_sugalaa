@@ -118,6 +118,7 @@ export async function POST(request: Request) {
     let transactionsWithLottery = 0;
     let totalLotteries = 0;
     let skippedNoPhone = 0; // Утасны дугаар байхгүйгээс алгасагдсан
+    let skippedDuplicate = 0; // Давхардсан гүйлгээ
 
     /* ==== Tracking arrays ==== */
     const allTransactions: any[] = [];
@@ -126,6 +127,31 @@ export async function POST(request: Request) {
 
     /* ==== LOOP ==== */
     for (const row of data) {
+      // ✅ Давхардсан эсэхийг шалгах (carId + огноо + дүн + тайлбар)
+      const [existingRows] = await connection.query<CountRow[]>(
+        `SELECT COUNT(*) as cnt FROM bankTransactions
+         WHERE carId = ?
+         AND guildgeeniiOgnoo = ?
+         AND credit = ?
+         AND guildgeeniiUtga = ?`,
+        [
+          metadata.carId,
+          toMySQLDatetime(row.guildgeeniiOgnoo),
+          row.credit,
+          row.guildgeeniiUtga
+        ]
+      );
+
+      // Давхардсан бол алгасах
+      if (existingRows[0].cnt > 0) {
+        skippedDuplicate++;
+        // ✅ Тоолох л болохоос дэлгэрэнгүй харуулахгүй
+        // (Өдөрт олон удаа upload хийхэд олон давхардсан гарна)
+        console.log(`⚠️ Давхардсан гүйлгээ алгассан: ${row.guildgeeniiOgnoo} - ${row.credit}₮`);
+        continue;
+      }
+
+      // Шинэ гүйлгээ - хадгална
       const [txResult] = await connection.query<ResultSetHeader>(
         insertTransactionQuery,
         [
@@ -222,10 +248,13 @@ export async function POST(request: Request) {
 
     // Шалтгаан бэлтгэх
     const skippedReasons: string[] = [];
+    if (skippedDuplicate > 0) {
+      skippedReasons.push(`${skippedDuplicate} давхардсан гүйлгээ`);
+    }
     if (skippedNoPhone > 0) {
       skippedReasons.push(`${skippedNoPhone} гүйлгээ утасны дугаар олдсонгүй`);
     }
-    const skippedLowAmount = skippedDetails.length - skippedNoPhone;
+    const skippedLowAmount = skippedDetails.length - skippedNoPhone - skippedDuplicate;
     if (skippedLowAmount > 0) {
       skippedReasons.push(`${skippedLowAmount} гүйлгээ мөнгөн дүн хүрэлцэхгүй`);
     }

@@ -8,16 +8,11 @@ import {
   Search, 
   RefreshCw, 
   AlertCircle, 
-  Power, 
-  EyeOff, 
-  MoreVertical, 
-  Filter, 
-  Plus,
-  LayoutGrid,
-  TrendingUp,
-  Users
+  Users,
+  Trash2 // Хогийн савны icon нэмсэн
 } from 'lucide-react';
 import { AdminHeader } from '../components/AdminHeader';
+import { AddCarModal } from '../components/AddCarModal';
 
 // --- Types ---
 interface CarData {
@@ -39,6 +34,7 @@ export default function AdminPage() {
   const [cars, setCars] = useState<CarData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isAddCarModalOpen, setIsAddCarModalOpen] = useState(false);
 
   // Машинуудыг database-аас татах
   const fetchCars = async () => {
@@ -61,12 +57,19 @@ export default function AdminPage() {
     fetchCars();
   }, []);
 
-  // Хайлтын логик
-  const filteredCars = cars.filter(car => 
-    car.carName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    car.ibanName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    car.iban.includes(searchTerm)
-  );
+  // Хайлтын логик + Inactive машиныг нуух
+  const filteredCars = cars.filter(car => {
+    // 1. Статус нь 'inactive' биш байх ёстой (active эсвэл хоосон байж болно)
+    const isActive = car.status !== 'inactive';
+    
+    // 2. Хайлтын үг таарч байх
+    const matchesSearch = 
+      car.carName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      car.ibanName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      car.iban.includes(searchTerm);
+
+    return isActive && matchesSearch;
+  });
 
   // Машин сонгох - зөвхөн ID дамжуулах
   const handleSelectCar = (carId: string) => {
@@ -83,9 +86,12 @@ export default function AdminPage() {
     return String(price).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
-  // Төлөв өөрчлөх
-  const handleToggleStatus = async (carId: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+  // Төлөв өөрчлөх (Устгах/Идэвхгүй болгох)
+  const handleDeleteClick = async (carId: string) => {
+    // Санамсаргүй дарахаас сэргийлж баталгаажуулалт авах
+    if (!window.confirm('Та энэ сугалааг устгахдаа итгэлтэй байна уу? Жагсаалтаас харагдахгүй болно.')) {
+      return;
+    }
 
     try {
       const response = await fetch('/api/cars/update-status', {
@@ -93,22 +99,22 @@ export default function AdminPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id: carId, status: newStatus }),
+        body: JSON.stringify({ id: carId, status: 'inactive' }),
       });
 
       if (!response.ok) {
         throw new Error('Төлөв өөрчлөхөд алдаа гарлаа');
       }
 
-      // Update local state
+      // Local state шинэчлэх (Жагсаалтаас шууд алга болно)
       setCars((prevCars) =>
         prevCars.map((car) =>
-          car.id === carId ? { ...car, status: newStatus } : car
+          car.id === carId ? { ...car, status: 'inactive' } : car
         )
       );
     } catch (err) {
       console.error('Toggle status error:', err);
-      // Optional: Show toast error here
+      alert('Устгахад алдаа гарлаа');
     }
   };
 
@@ -136,6 +142,16 @@ export default function AdminPage() {
         setSearchTerm={setSearchTerm}
         onRefresh={fetchCars}
         totalCars={filteredCars.length}
+        onAddClick={() => setIsAddCarModalOpen(true)}
+      />
+
+      <AddCarModal
+        isOpen={isAddCarModalOpen}
+        onClose={() => setIsAddCarModalOpen(false)}
+        onSuccess={() => {
+          fetchCars();
+          setIsAddCarModalOpen(false);
+        }}
       />
       
       <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -167,7 +183,6 @@ export default function AdminPage() {
             const progress = calculateProgress(car.sold, car.total);
             const remaining = car.total - car.sold;
             
-            // Progress Colors (Tailwind classes would be dynamic, using inline styles for logic)
             const progressColorClass = progress < 30 
               ? 'bg-amber-500' 
               : progress < 70 
@@ -200,9 +215,22 @@ export default function AdminPage() {
                     <span className="text-xs font-semibold uppercase tracking-wider">Зураггүй</span>
                   </div>
 
-                  {/* Status Overlay */}
-                  <div className="absolute top-3 right-3 flex gap-2">
-                    <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-lg border border-white/50">
+                  {/* Top Right Action Buttons (Trash Icon added here) */}
+                  <div className="absolute top-3 right-3 flex gap-2 z-10">
+                    {/* Delete Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClick(car.id);
+                      }}
+                      title="Устгах"
+                      className="bg-white/90 backdrop-blur-md p-2 rounded-full shadow-lg border border-white/50 text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+
+                    {/* Progress Badge */}
+                    <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-lg border border-white/50 flex items-center justify-center">
                       <span className="text-xs font-bold text-slate-800">{progress}%</span>
                     </div>
                   </div>
@@ -255,38 +283,13 @@ export default function AdminPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
-                    {/* Status Button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleStatus(car.id, car.status || 'active');
-                      }}
-                      className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                        car.status === 'inactive'
-                          ? 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                          : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
-                      }`}
-                    >
-                      {car.status === 'inactive' ? (
-                        <>
-                          <EyeOff className="w-3.5 h-3.5" />
-                          <span>Идэвхгүй</span>
-                        </>
-                      ) : (
-                        <>
-                          <Power className="w-3.5 h-3.5" />
-                          <span>Идэвхтэй</span>
-                        </>
-                      )}
-                    </button>
-
-                    {/* Import Button */}
+                  <div className="flex items-center pt-2 border-t border-slate-100">
+                    {/* Import Button (Now Full Width) */}
                     <button
                       onClick={() => handleSelectCar(car.id)}
-                      className="flex-[2] flex items-center justify-center gap-2 px-3 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 hover:shadow-lg hover:shadow-indigo-300 font-semibold text-sm group-hover:scale-[1.02]"
+                      className="w-full flex items-center justify-center gap-2 px-3 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 hover:shadow-lg hover:shadow-indigo-300 font-semibold text-sm group-hover:scale-[1.01]"
                     >
-                      <span>Импорт</span>
+                      <span>Импорт хийх</span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
@@ -306,7 +309,7 @@ export default function AdminPage() {
               Машин олдсонгүй
             </h3>
             <p className="text-slate-500 max-w-sm mx-auto">
-              {searchTerm ? `"${searchTerm}" хайлтаар илэрц олдсонгүй. Хайх үгээ шалгаад дахин оролдоно уу.` : 'Одоогоор бүртгэлтэй машин байхгүй байна.'}
+              {searchTerm ? `"${searchTerm}" хайлтаар илэрц олдсонгүй.` : 'Одоогоор идэвхтэй машин байхгүй байна.'}
             </p>
             {searchTerm && (
               <button 
