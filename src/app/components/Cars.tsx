@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import React, { useState, useEffect, memo } from "react";
+import { Copy, CheckCircle, ExternalLink, Car as CarIcon, TrendingUp, AlertCircle } from "lucide-react";
 
 export type Car = {
   id?: string;
@@ -87,12 +88,15 @@ class SimpleErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <section className="max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-4">⚠️ Алдаа гарлаа</h2>
-          <p className="text-yellow-200">
-            Компонент дотор асуудал илэрсэн тул түр зогслоо. Дахин сэргээх бол хуудас шинэчилнэ үү.
+        <div className="bg-gradient-to-br from-red-500/10 to-orange-500/10 border border-red-500/20 rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-center">
+          <div className="w-16 h-16 mx-auto rounded-full bg-red-500/10 flex items-center justify-center mb-4">
+            <AlertCircle className="w-8 h-8 text-red-400" />
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Алдаа гарлаа</h2>
+          <p className="text-red-200/80 text-sm sm:text-base">
+            Компонент дотор асуудал илэрсэн. Хуудас шинэчилнэ үү.
           </p>
-        </section>
+        </div>
       );
     }
     return this.props.children;
@@ -110,9 +114,13 @@ const CarCard = memo(function CarCard({ car, priority = false }: { car: Car; pri
   const left = Math.max(0, total - sold);
   const percent = total > 0 ? Math.round((sold / total) * 100) : 0;
 
-  // Өнгө сонгох
-  const progressColor =
-    percent < 30 ? "#da9b27ff" : percent < 50 ? "#ffd54f" : "#4caf50";
+  // Progress color based on availability
+  const getProgressColor = () => {
+    if (percent >= 90) return "from-red-500 to-red-600";
+    if (percent >= 70) return "from-orange-500 to-orange-600";
+    if (percent >= 50) return "from-yellow-500 to-yellow-600";
+    return "from-green-500 to-green-600";
+  };
 
   useEffect(() => {
     setImgSrc(car.img || FALLBACK_IMG);
@@ -135,7 +143,7 @@ const CarCard = memo(function CarCard({ car, priority = false }: { car: Car; pri
         ta.remove();
       }
       setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.warn("Clipboard copy failed", err);
       alert("IBAN хуулж чадсангүй. Гараар хуулна уу.");
@@ -150,99 +158,146 @@ const CarCard = memo(function CarCard({ car, priority = false }: { car: Car; pri
   };
 
   return (
-    <li className="relative rounded-2xl overflow-hidden shadow-lg bg-gray-800 group transition-transform hover:scale-[1.02]">
-      <Image
-        src={imgSrc}
-        alt={car.carName || "Car"}
-        width={960}
-        height={640}
-        className={classNames("aspect-[3/2] w-full object-cover", imgErrored && "opacity-90")}
-        placeholder="blur"
-        blurDataURL="/blur/placeholder-24px.jpg"
-        priority={priority}
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        onError={handleImageError}
-      />
+    <li className="group relative">
+      {/* Animated gradient border */}
+      <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-400 via-purple-500 to-blue-400 rounded-2xl sm:rounded-3xl opacity-0 group-hover:opacity-40 blur-sm transition-all duration-500 animate-gradient bg-[length:200%_auto]" />
 
-      <div className="bg-white/10 backdrop-blur-md p-4 text-white space-y-3">
-        <div className="text-center">
-          <span className="block text-base font-semibold text-yellow-300">
-            {car.carName || "Тодорхойгүй нэр"} &nbsp;{" "}
-            <span className="font-bold text-green-300">{String(car.price ?? "—")}</span>
-          </span>
+      <div className="relative bg-gradient-to-br from-[#1a1a1c] to-[#121214] rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 shadow-2xl hover:shadow-blue-500/10 transition-all duration-500">
+        {/* Image Section */}
+        <div className="relative overflow-hidden">
+          <Image
+            src={imgSrc}
+            alt={car.carName || "Car"}
+            width={960}
+            height={640}
+            className={classNames(
+              "aspect-[3/2] w-full object-cover transition-transform duration-700 group-hover:scale-110",
+              imgErrored && "opacity-90"
+            )}
+            placeholder="blur"
+            blurDataURL="/blur/placeholder-24px.jpg"
+            priority={priority}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            onError={handleImageError}
+          />
 
-          <span className="block text-sm font-mono tracking-wide bg-white/30 text-white px-3 py-1 rounded-lg inline-block mt-1">
-            {car.iban || "—"}
-          </span>
+          {/* Overlay gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-          <button
-            onClick={copy}
-            className="mt-2 inline-flex items-center gap-1 text-sm text-indigo-200 hover:text-white underline"
-            aria-label="IBAN хуулах"
-            type="button"
-          >
-            <Image src="/copy.svg" alt="" width={20} height={20} />
-            Хуулах
-          </button>
-
-          {copied && (
-            <span className="block text-green-300 text-xs mt-1">
-              ✅ Хуулсан! Дансны нэр : {car.ibanName || "—"}
-            </span>
-          )}
-        </div>
-
-        <div className="mt-3">
-          <div className="flex items-center justify-between text-sm text-white/80 mb-1">
-            <span>
-              {total} - {sold} = <b>{left}</b> ш эрх үлдлээ
-            </span>
-            <span>{percent}%</span>
-          </div>
-
-          <div
-            className="w-full h-3.5 rounded-full bg-white/20 overflow-hidden"
-            role="progressbar"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={percent}
-          >
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${percent}%`,
-                backgroundColor: progressColor,
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center justify-center gap-2 mt-5">
-          <a
-            href={car.fbLink || "#"}
-            target={car.fbLink ? "_blank" : undefined}
-            rel={car.fbLink ? "noopener noreferrer" : undefined}
-            aria-disabled={!car.fbLink}
-            className="w-full"
-          >
-            <div
-              className={classNames(
-                "group w-full text-sm sm:text-base rounded-xl py-3 font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white text-center transition-all duration-300 flex items-center justify-center gap-2 shadow-md",
-                "hover:from-blue-500 hover:to-blue-400 hover:shadow-lg",
-                !car.fbLink && "opacity-60 cursor-not-allowed"
-              )}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
-                fill="currentColor"
-              >
-                <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24h11.495V14.708h-3.13v-3.622h3.13V8.413c0-3.1 1.894-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24h-1.918c-1.504 0-1.795.715-1.795 1.763v2.314h3.587l-.467 3.622h-3.12V24h6.116C23.407 24 24 23.407 24 22.675V1.325C24 .593 23.407 0 22.675 0z" />
-              </svg>
-              <span className="align-middle">Дэлгэрэнгүй мэдээлэл</span>
+          {/* Availability badge */}
+          <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+            <div className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${left > 0 ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
+              <span className="text-white text-xs sm:text-sm font-bold">
+                {left} үлдсэн
+              </span>
             </div>
-          </a>
+          </div>
+        </div>
+
+        {/* Content Section */}
+        <div className="p-5 sm:p-6 space-y-4 sm:space-y-5">
+          {/* Car Name & Price */}
+          <div className="space-y-2">
+            <h3 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+              <CarIcon className="w-5 h-5 text-blue-400 flex-shrink-0" />
+              <span className="truncate">{car.carName || "Тодорхойгүй нэр"}</span>
+            </h3>
+            <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm text-white/60">Үнэ:</span>
+              <span className="text-lg sm:text-xl font-bold text-green-400">
+                {String(car.price ?? "—")}₮
+              </span>
+            </div>
+          </div>
+
+          {/* IBAN Section */}
+          <div className="space-y-2">
+            <div className="p-3 sm:p-4 bg-white/5 rounded-xl border border-white/10 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-white/40 uppercase tracking-wider">Данс</span>
+                <button
+                  onClick={copy}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-blue-400 hover:text-black text-white transition-all duration-300 text-xs font-medium active:scale-95"
+                  aria-label="IBAN хуулах"
+                  type="button"
+                >
+                  {copied ? (
+                    <>
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      Хуулсан
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      Хуулах
+                    </>
+                  )}
+                </button>
+              </div>
+              <p className="font-mono text-sm sm:text-base text-white font-medium break-all">
+                {car.iban || "—"}
+              </p>
+              {copied && car.ibanName && (
+                <p className="text-xs text-green-400 animate-in fade-in slide-in-from-top-2 duration-300">
+                  ✓ Дансны нэр: {car.ibanName}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Progress Section */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs sm:text-sm">
+              <div className="flex items-center gap-2 text-white/60">
+                <TrendingUp className="w-4 h-4" />
+                <span>
+                  <span className="font-bold text-white">{sold}</span> / {total} зарагдсан
+                </span>
+              </div>
+              <span className="font-bold text-blue-400">{percent}%</span>
+            </div>
+
+            {/* Progress bar */}
+            <div
+              className="w-full h-2.5 sm:h-3 rounded-full bg-white/10 overflow-hidden"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={percent}
+            >
+              <div
+                className={classNames(
+                  "h-full rounded-full transition-all duration-700 bg-gradient-to-r",
+                  getProgressColor()
+                )}
+                style={{ width: `${percent}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Facebook Link Button */}
+          {car.fbLink && (
+            <a
+              href={car.fbLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group/btn block"
+            >
+              <div className="w-full px-4 py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold text-sm sm:text-base text-center transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/50 active:scale-95">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  className="w-5 h-5 transition-transform duration-300 group-hover/btn:scale-110"
+                  fill="currentColor"
+                >
+                  <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24h11.495V14.708h-3.13v-3.622h3.13V8.413c0-3.1 1.894-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24h-1.918c-1.504 0-1.795.715-1.795 1.763v2.314h3.587l-.467 3.622h-3.12V24h6.116C23.407 24 24 23.407 24 22.675V1.325C24 .593 23.407 0 22.675 0z" />
+                </svg>
+                <span>Дэлгэрэнгүй</span>
+                <ExternalLink className="w-4 h-4" />
+              </div>
+            </a>
+          )}
         </div>
       </div>
     </li>
@@ -254,19 +309,16 @@ export default function Cars() {
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
-  const [debug, setDebug] = useState<string | null>(null);
 
   const isEmpty = !loading && !err && cars.length === 0;
 
   const loadCars = async () => {
     setLoading(true);
     setErr(null);
-    setDebug(null);
     try {
       const data = (await fetchWithRetry("/api/cars", { timeoutMs: 8000 }, 2)) as Car[];
       if (!Array.isArray(data)) throw new Error("Өгөгдөл буруу форматаар ирлээ (array биш)");
       setCars(data);
-      if (data.length === 0) setDebug("API амжилттай боловч хоосон жагсаалт буцав.");
     } catch (e) {
       console.error("Failed to load cars", e);
       setErr("Машины жагсаалтыг татаж чадсангүй.");
@@ -291,70 +343,97 @@ export default function Cars() {
 
   if (loading) {
     return (
-      <section className="max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-6 text-center sm:text-left">
-          🚗 Одоогоор манайд зарлагдсан машинууд
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="space-y-6 sm:space-y-8">
+        {/* Header Skeleton */}
+        <div className="space-y-3">
+          <div className="h-8 sm:h-10 w-64 sm:w-80 bg-white/10 rounded-xl animate-pulse" />
+          <div className="h-4 w-48 bg-white/5 rounded-lg animate-pulse" />
+        </div>
+
+        {/* Cards Skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-80 rounded-2xl bg-white/10 animate-pulse" />
+            <div
+              key={i}
+              className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-2xl sm:rounded-3xl overflow-hidden"
+            >
+              <div className="aspect-[3/2] bg-white/10 animate-pulse" />
+              <div className="p-5 sm:p-6 space-y-4">
+                <div className="h-6 bg-white/10 rounded-lg animate-pulse" />
+                <div className="h-4 bg-white/5 rounded-lg animate-pulse w-3/4" />
+                <div className="h-12 bg-white/10 rounded-xl animate-pulse" />
+                <div className="h-3 bg-white/5 rounded-full animate-pulse" />
+              </div>
+            </div>
           ))}
         </div>
-      </section>
+      </div>
     );
   }
 
   if (err) {
     return (
-      <section className="max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-4">Алдаа</h2>
-        <div className="rounded-lg border border-yellow-400 bg-yellow-50/10 p-4 text-yellow-200">
-          <p className="mb-2">{err}</p>
-          <div className="flex gap-2">
+      <div className="bg-gradient-to-br from-red-500/10 to-orange-500/10 border border-red-500/20 rounded-2xl sm:rounded-3xl p-6 sm:p-8">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
+            <AlertCircle className="w-6 h-6 text-red-400" />
+          </div>
+          <div className="flex-1 space-y-4">
+            <div>
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-1">Алдаа гарлаа</h3>
+              <p className="text-sm sm:text-base text-red-200/80">{err}</p>
+            </div>
             <button
               onClick={loadCars}
               type="button"
-              className="inline-flex items-center gap-2 rounded-lg bg-yellow-300 text-gray-900 px-4 py-2 font-semibold hover:bg-yellow-200"
+              className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold transition-all duration-300 active:scale-95"
             >
               Дахин оролдох
             </button>
-            <button
-              onClick={() => setDebug((d) => (d ? null : "Алдааны дэлгэрэнгүйг консол дээр шалгана уу."))}
-              type="button"
-              className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-4 py-2 hover:bg-white/10"
-            >
-              Дэлгэрэнгүй
-            </button>
           </div>
-          {debug && <p className="mt-2 text-xs opacity-80">{debug}</p>}
         </div>
-      </section>
+      </div>
     );
   }
 
   return (
     <SimpleErrorBoundary>
-      <section className="max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-6 text-center sm:text-left">
-          🚗 Одоогоор манайд зарлагдсан машинууд
-        </h2>
-
-        <div className="bg-yellow-100 text-yellow-800 px-4 py-3 rounded mb-6 shadow-md text-sm">
-          <strong>Санамж:</strong> Сугалаанд оролцохыг хүсвэл та доорх данс руу гүйлгээ хийнэ үү.
+      <div className="space-y-6 sm:space-y-8">
+        {/* Header */}
+        <div className="space-y-3">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white flex items-center gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+              <CarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <span>Зарлагдсан машинууд</span>
+          </h2>
+          <p className="text-sm sm:text-base text-white/50 ml-0 sm:ml-[60px]">
+            Доорх данс руу гүйлгээ хийж сугалаанд оролцоорой
+          </p>
         </div>
 
+        {/* Empty State */}
         {isEmpty && (
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-center text-white">
-            Одоогоор машин байхгүй байна. Дараа дахин шалгана уу.
+          <div className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-8 sm:p-12 text-center">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full bg-white/10 flex items-center justify-center mb-4">
+              <CarIcon className="w-8 h-8 sm:w-10 sm:h-10 text-white/40" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-bold text-white mb-2">
+              Машин байхгүй байна
+            </h3>
+            <p className="text-sm sm:text-base text-white/50">
+              Дараа дахин шалгана уу
+            </p>
           </div>
         )}
 
-        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Cars Grid */}
+        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {cars.map((car, i) => (
             <CarCard key={car.id || `${car.iban}-${car.carName}-${i}`} car={car} priority={i < 2} />
           ))}
         </ul>
-      </section>
+      </div>
     </SimpleErrorBoundary>
   );
 }
