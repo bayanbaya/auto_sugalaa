@@ -84,7 +84,7 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen  text-white font-sans selection:bg-yellow-400 selection:text-black overflow-x-hidden">
+    <div className=" text-white font-sans selection:bg-yellow-400 selection:text-black overflow-x-hidden">
       {/* Enhanced Background Effects - Mobile Optimized */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-30%] left-[-20%] w-[80%] sm:w-[60%] lg:w-[40%] h-[60%] sm:h-[50%] lg:h-[40%] bg-yellow-500/10 blur-[100px] sm:blur-[120px] rounded-full animate-pulse" />
