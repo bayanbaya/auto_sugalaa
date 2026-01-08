@@ -2,10 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   WORLD-CLASS DESIGN SYSTEM
+   Inspired by: Apple, Stripe, Linear, Vercel
+   ============================================ */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Pure Black Base - Premium Foundation */
+  --background: #000000;
+  --foreground: #ffffff;
+
+  /* Refined Black Shades */
+  --black-900: #000000;
+  --black-800: #0a0a0a;
+  --black-700: #0f0f10;
+  --black-600: #141415;
+  --black-500: #1a1a1b;
+
+  /* Premium Grays - Precise Hierarchy */
+  --gray-900: #18181b;
+  --gray-800: #27272a;
+  --gray-700: #3f3f46;
+  --gray-600: #52525b;
+  --gray-500: #71717a;
+  --gray-400: #a1a1aa;
+  --gray-300: #d4d4d8;
+  --gray-200: #e4e4e7;
+  --gray-100: #f4f4f5;
+
+  /* Refined Gold Accent - Sophisticated, Not Cheap */
+  --gold-900: #78350f;
+  --gold-800: #92400e;
+  --gold-700: #b45309;
+  --gold-600: #d97706;
+  --gold-500: #f59e0b;
+  --gold-400: #fbbf24;
+  --gold-300: #fcd34d;
+  --gold-200: #fde68a;
+  --gold-100: #fef3c7;
+
+  /* Typography Scale - Mathematical Precision */
+  --font-display: var(--font-geist-sans);
+  --font-body: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Spacing Scale - Perfect 8pt Grid */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+  --space-20: 5rem;    /* 80px */
+  --space-24: 6rem;    /* 96px */
+
+  /* Border Radius - Consistent Curvature */
+  --radius-sm: 0.5rem;   /* 8px */
+  --radius-md: 0.75rem;  /* 12px */
+  --radius-lg: 1rem;     /* 16px */
+  --radius-xl: 1.5rem;   /* 24px */
+  --radius-2xl: 2rem;    /* 32px */
+
+  /* Shadows - Depth with Subtlety */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 }
 
 @theme inline {
@@ -15,15 +82,13 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Base Styles - Premium Defaults */
 body {
-  /* Background handled by layout.tsx */
+  font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.011em;
 }
 
 @keyframes fadeIn {
@@ -39,6 +104,62 @@ body {
 
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out;
+}
+
+/* Premium Animations - Subtle & Purposeful */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+@keyframes scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Enhanced Mobile Touch Feedback */
@@ -85,4 +206,23 @@ body, html {
 *::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
   background-clip: padding-box;
+}
+
+/* Custom Scrollbar for Modal */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(250, 204, 21, 0.3);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(250, 204, 21, 0.5);
 }

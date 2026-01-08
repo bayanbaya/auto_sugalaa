@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Search,
   XCircle,
@@ -13,7 +13,10 @@ import {
   Copy,
   Info,
   Sparkles,
-  Clock
+  Clock,
+  X,
+  CheckCircle2,
+  Calendar
 } from 'lucide-react';
 
 interface LotteryResult {
@@ -42,6 +45,30 @@ const App = () => {
   const [result, setResult] = useState<LotteryResult | null>(null);
   const [error, setError] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  // Close modal with Escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showModal) {
+        setShowModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [showModal]);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (showModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showModal]);
 
   const handleCheck = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +97,8 @@ const App = () => {
       }
 
       setResult(data);
-    } catch (error) {
+      setShowModal(true); // Open modal when results arrive
+    } catch {
       setError('Холболтын алдаа гарлаа. Дахин оролдоно уу.');
     } finally {
       setLoading(false);
@@ -143,7 +171,7 @@ const App = () => {
               }`}
             >
               <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-              <span>Сугалаа авах</span>
+              <span>Холбоо барих</span>
             </button>
           </div>
         </div>
@@ -197,97 +225,6 @@ const App = () => {
                 )}
               </div>
 
-              {/* No Lottery Found Message */}
-              {result && !result.found && (
-                <div className="mt-6 sm:mt-8 lg:mt-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-center space-y-4">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full bg-blue-500/10 flex items-center justify-center">
-                      <Clock className="w-8 h-8 sm:w-10 sm:h-10 text-blue-400 animate-pulse" />
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="text-xl sm:text-2xl font-bold text-white">
-                        Сугалаа илэрсэнгүй
-                      </h3>
-                      <p className="text-sm sm:text-base text-white/60 leading-relaxed max-w-md mx-auto">
-                        Таны гүйлгээ хүлээгдэж байна. Манайх өдөрт{' '}
-                        <span className="font-bold text-blue-400">3-5 удаа</span>{' '}
-                        шивэлт хийдэг тул хэсэг хугацааны дараа дахин шалгана уу.
-                      </p>
-                      {result.latestCheck && (
-                        <div className="pt-4 border-t border-white/10 mt-4">
-                          <p className="text-xs sm:text-sm text-white/40">
-                            Сүүлийн шивэлт:{' '}
-                            <span className="text-blue-400 font-mono font-medium">
-                              {new Date(result.latestCheck).toLocaleString('mn-MN', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </span>
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Search Results Display - Mobile Optimized */}
-              {result && result.found && result.data && (
-                <div className="mt-6 sm:mt-8 lg:mt-10 space-y-4 sm:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="flex items-center justify-between px-1 sm:px-2">
-                    <h3 className="text-lg sm:text-xl font-bold">Таны сугалаанууд</h3>
-                    <span className="px-2.5 sm:px-3 py-1 bg-yellow-400/10 text-yellow-400 rounded-full text-[10px] sm:text-xs font-bold border border-yellow-400/20">
-                      Нийт {result.totalLotteries} ширхэг
-                    </span>
-                  </div>
-
-                  {result.data.map((car, idx: number) => (
-                    <div key={idx} className="group relative">
-                      <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-amber-600 rounded-2xl sm:rounded-[2rem] opacity-20 group-hover:opacity-40 transition-opacity duration-500 blur-sm" />
-                      <div className="relative bg-[#121214] rounded-2xl sm:rounded-[2rem] overflow-hidden border border-white/5">
-                        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 sm:p-6">
-                          <img
-                            src={car.carImage}
-                            className="w-full sm:w-36 md:w-40 h-40 sm:h-28 md:h-32 object-cover rounded-xl sm:rounded-2xl shadow-2xl"
-                            alt={car.carName}
-                          />
-                          <div className="flex-1 space-y-2">
-                            <h4 className="text-lg sm:text-xl font-bold">{car.carName}</h4>
-                            <div className="flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm text-white/40">
-                              <span className="flex items-center gap-1">
-                                <Ticket className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                {car.lotteries.length} сугалаа
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                {car.ticketPrice.toLocaleString()}₮
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="p-3 sm:p-4 bg-white/[0.02] border-t border-white/5 space-y-2">
-                          {car.lotteries.map((l, i) => (
-                            <div
-                              key={i}
-                              className="flex items-center justify-between bg-white/5 p-3 sm:p-4 rounded-xl border border-white/5 hover:border-yellow-400/30 hover:bg-white/10 transition-all duration-300"
-                            >
-                              <span className="font-mono font-bold text-yellow-400 tracking-wider text-sm sm:text-base">
-                                {l.lotteryNumber}
-                              </span>
-                              <span className="text-[9px] sm:text-[10px] text-white/30 uppercase tracking-widest">
-                                {new Date(l.createdAt).toLocaleDateString('mn-MN')}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           ) : (
             /* Purchase Flow Section - Mobile First */
@@ -298,42 +235,25 @@ const App = () => {
                 </div>
 
                 <div className="relative space-y-6 sm:space-y-8">
-                  <div className="space-y-2">
-                    <h2 className="text-2xl sm:text-3xl font-bold">Сугалаа авах заавар</h2>
-                    <p className="text-white/50 text-sm sm:text-base leading-relaxed">
-                      Доорх дансанд гүйлгээ хийснээр таны сугалаа 1-3 минутын дотор идэвхжих болно.
-                    </p>
-                  </div>
+                 
 
                   <div className="grid gap-3 sm:gap-4">
                     {/* Bank Account Info Card */}
                     <div className="group relative bg-[#121214] border border-white/10 p-4 sm:p-6 rounded-2xl sm:rounded-3xl hover:border-yellow-400/50 transition-all duration-300">
-                      <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-4 mb-4 sm:mb-6">
-                        <div className="flex items-center gap-3 sm:gap-4">
-                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 flex-shrink-0">
-                            <CreditCard className="text-yellow-400 w-5 h-5 sm:w-6 sm:h-6" />
-                          </div>
-                          <div>
-                            <p className="text-[10px] sm:text-xs text-white/40 font-medium">
-                              Хүлээн авах банк
-                            </p>
-                            <p className="font-bold text-sm sm:text-base">ХААН БАНК</p>
-                          </div>
-                        </div>
-                      </div>
+                  
 
                       <div className="space-y-3 sm:space-y-4">
                         <div className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-white/5 rounded-xl sm:rounded-2xl border border-white/5">
                           <div className="min-w-0 flex-1">
                             <p className="text-[9px] sm:text-[10px] text-white/30 uppercase font-bold mb-1 tracking-tight sm:tracking-tighter">
-                              Дансны дугаар
+                              Утасны дугаар
                             </p>
                             <p className="font-mono font-bold text-white tracking-wider text-lg xs:text-xl sm:text-2xl break-all">
-                              58643210545
+                              99431042
                             </p>
                           </div>
                           <button
-                            onClick={() => copyToClipboard('58643210545')}
+                            onClick={() => copyToClipboard('99431042')}
                             className="p-2.5 sm:p-3 bg-white/10 hover:bg-yellow-400 hover:text-black rounded-lg sm:rounded-xl transition-all duration-300 active:scale-95 flex-shrink-0"
                             aria-label="Copy account number"
                           >
@@ -341,65 +261,55 @@ const App = () => {
                           </button>
                         </div>
 
-                        <div className="flex items-center justify-between p-3 sm:p-4 bg-white/5 rounded-xl sm:rounded-2xl border border-white/5">
-                          <div>
+                        <div className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-white/5 rounded-xl sm:rounded-2xl border border-white/5">
+                          <div className="min-w-0 flex-1">
                             <p className="text-[9px] sm:text-[10px] text-white/30 uppercase font-bold mb-1 tracking-tight sm:tracking-tighter">
-                              Хүлээн авагч
+                              Facebook Чат
                             </p>
-                            <p className="text-lg sm:text-xl font-bold text-white">
-                              БАЯНБАЯР
-                            </p>
+                            <a
+                              href="https://www.facebook.com/messages/t/100002299766815"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-bold text-blue-400 hover:text-blue-300 text-xs xs:text-sm sm:text-base break-all underline underline-offset-4"
+                            >
+                              facebook.com/messages/t/100002299766815
+                            </a>
                           </div>
-                          <User className="w-5 h-5 sm:w-6 sm:h-6 text-white/20" />
+                          <button
+                            onClick={() => copyToClipboard('https://www.facebook.com/messages/t/100002299766815')}
+                            className="p-2.5 sm:p-3 bg-white/10 hover:bg-yellow-400 hover:text-black rounded-lg sm:rounded-xl transition-all duration-300 active:scale-95 flex-shrink-0"
+                            aria-label="Copy Facebook chat link"
+                          >
+                            <Copy className="w-4 h-4 sm:w-5 sm:h-5" />
+                          </button>
                         </div>
+
+                        <div className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-white/5 rounded-xl sm:rounded-2xl border border-white/5">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[9px] sm:text-[10px] text-white/30 uppercase font-bold mb-1 tracking-tight sm:tracking-tighter">
+                              Facebook Хуудас
+                            </p>
+                            <a
+                              href="https://www.facebook.com/MBautohudaldaa"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-bold text-blue-400 hover:text-blue-300 text-xs xs:text-sm sm:text-base break-all underline underline-offset-4"
+                            >
+                              facebook.com/MBautohudaldaa
+                            </a>
+                          </div>
+                          <button
+                            onClick={() => copyToClipboard('https://www.facebook.com/MBautohudaldaa')}
+                            className="p-2.5 sm:p-3 bg-white/10 hover:bg-yellow-400 hover:text-black rounded-lg sm:rounded-xl transition-all duration-300 active:scale-95 flex-shrink-0"
+                            aria-label="Copy Facebook page link"
+                          >
+                            <Copy className="w-4 h-4 sm:w-5 sm:h-5" />
+                          </button>
+                        </div>                        
                       </div>
                     </div>
 
-                    {/* Important Notice */}
-                    <div className="bg-yellow-400/10 border border-yellow-400/20 p-4 sm:p-6 rounded-2xl sm:rounded-3xl flex gap-3 sm:gap-4">
-                      <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-yellow-400 flex items-center justify-center text-black">
-                        <Info className="w-4 h-4 sm:w-5 sm:h-5" />
-                      </div>
-                      <div className="space-y-1 min-w-0">
-                        <p className="font-bold text-yellow-400 text-sm sm:text-base">
-                          Гүйлгээний утга дээр!
-                        </p>
-                        <p className="text-xs sm:text-sm text-yellow-100/70 leading-relaxed">
-                          Гүйлгээний утга дээр зөвхөн{' '}
-                          <span className="font-bold text-yellow-400">УТАСНЫ ДУГААРАА</span>{' '}
-                          бичнэ үү. Алдаатай бичсэн тохиолдолд сугалаа үүсэхгүй болохыг анхаарна уу.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Social Proof & Draw Date */}
-                  <div className="flex flex-col xs:flex-row items-center justify-between gap-4 pt-4 border-t border-white/5">
-                    <div className="flex -space-x-2 sm:-space-x-3">
-                      {[1, 2, 3, 4].map((i) => (
-                        <div
-                          key={i}
-                          className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-[#0a0a0b] bg-white/10 overflow-hidden ring-1 ring-white/5"
-                        >
-                          <img
-                            src={`https://i.pravatar.cc/100?img=${i + 20}`}
-                            alt="participant"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                      <div className="h-8 sm:h-10 px-3 sm:px-4 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-[9px] sm:text-[10px] font-bold">
-                        +1.2K
-                      </div>
-                    </div>
-                    <div className="text-center xs:text-right">
-                      <p className="text-[10px] sm:text-xs text-white/30 font-medium">
-                        Дараагийн сугалаа
-                      </p>
-                      <p className="font-bold text-yellow-400 text-sm sm:text-base">
-                        12 сарын 31-нд
-                      </p>
-                    </div>
+                
                   </div>
                 </div>
               </div>
@@ -412,6 +322,190 @@ const App = () => {
       {copySuccess && (
         <div className="fixed bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 bg-yellow-400 text-black px-4 sm:px-6 py-2.5 sm:py-3 rounded-full font-bold shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 text-sm sm:text-base z-50">
           Амжилттай хууллаа!
+        </div>
+      )}
+
+      {/* Modal for Results */}
+      {showModal && result && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300"
+          onClick={() => setShowModal(false)}
+        >
+          {/* Modal Backdrop */}
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-xl" />
+
+          {/* Modal Content */}
+          <div
+            className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-[#1a1a1d] to-[#0f0f10] border border-white/10 rounded-3xl shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-500"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-4 right-4 z-10 p-2 sm:p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all duration-300 group"
+            >
+              <X className="w-5 h-5 sm:w-6 sm:h-6 text-white/60 group-hover:text-white group-hover:rotate-90 transition-all duration-300" />
+            </button>
+
+            {/* Modal Body */}
+            <div className="p-6 sm:p-8 lg:p-10">
+              {!result.found ? (
+                /* No Lottery Found Modal */
+                <div className="text-center space-y-6 sm:space-y-8">
+                  {/* Icon */}
+                  <div className="relative inline-flex">
+                    <div className="absolute inset-0 bg-blue-500/20 blur-3xl animate-pulse" />
+                    <div className="relative w-20 h-20 sm:w-28 sm:h-28 mx-auto rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-blue-500/30 flex items-center justify-center">
+                      <Clock className="w-10 h-10 sm:w-14 sm:h-14 text-blue-400 animate-pulse" />
+                    </div>
+                  </div>
+
+                  {/* Title */}
+                  <div className="space-y-3 sm:space-y-4">
+                    <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+                      Сугалаа илэрсэнгүй
+                    </h3>
+                    <p className="text-sm sm:text-base lg:text-lg text-white/60 leading-relaxed max-w-lg mx-auto px-4">
+                      Таны гүйлгээ хүлээгдэж байна. Манайх өдөрт{' '}
+                      <span className="font-bold text-blue-400">3-5 удаа</span>{' '}
+                      шивэлт хийдэг тул хэсэг хугацааны дараа дахин шалгана уу.
+                    </p>
+                  </div>
+
+                  {/* Latest Check Info */}
+                  {result.latestCheck && (
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 max-w-md mx-auto">
+                      <div className="flex items-center justify-center gap-2 text-white/40 text-xs sm:text-sm mb-2">
+                        <Calendar className="w-4 h-4" />
+                        <span className="font-medium">Сүүлийн шивэлт</span>
+                      </div>
+                      <p className="text-blue-400 font-mono font-bold text-base sm:text-lg">
+                        {(() => {
+                          const d = new Date(result.latestCheck);
+                          return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} - ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                        })()}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Action Button */}
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="px-8 sm:px-12 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-2xl font-bold text-sm sm:text-base transition-all duration-300 shadow-lg hover:shadow-blue-500/50 hover:scale-105 active:scale-95"
+                  >
+                    Ойлголоо
+                  </button>
+                </div>
+              ) : (
+                /* Lottery Found Modal */
+                <div className="space-y-6 sm:space-y-8">
+                  {/* Header */}
+                  <div className="text-center space-y-3 sm:space-y-4 pb-4 sm:pb-6 border-b border-white/10">
+                    <div className="relative inline-flex">
+                      <div className="absolute inset-0 bg-yellow-400/20 blur-2xl" />
+                      <div className="relative flex items-center justify-center gap-2 sm:gap-3">
+                        <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400" />
+                        <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-200 bg-clip-text text-transparent">
+                          Таны сугалаанууд
+                        </h3>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="px-4 sm:px-6 py-2 bg-yellow-400/10 border border-yellow-400/20 rounded-full">
+                        <span className="text-yellow-400 font-bold text-sm sm:text-base">
+                          Нийт {result.totalLotteries} ширхэг
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Lottery Cards */}
+                  <div className="space-y-4 sm:space-y-6 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+                    {result.data?.map((car, idx) => (
+                      <div key={idx} className="group relative">
+                        {/* Glow Effect */}
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-amber-600 rounded-2xl sm:rounded-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-500 blur-sm" />
+
+                        {/* Card */}
+                        <div className="relative bg-[#0a0a0b] border border-white/10 rounded-2xl sm:rounded-3xl overflow-hidden">
+                          {/* Car Info */}
+                          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 sm:p-6 bg-gradient-to-br from-white/5 to-transparent">
+                            <img
+                              src={car.carImage}
+                              className="w-full sm:w-40 lg:w-48 h-48 sm:h-32 lg:h-36 object-cover rounded-xl sm:rounded-2xl shadow-2xl border border-white/10"
+                              alt={car.carName}
+                            />
+                            <div className="flex-1 space-y-3 sm:space-y-4">
+                              <h4 className="text-xl sm:text-2xl font-bold text-white">
+                                {car.carName}
+                              </h4>
+                              <div className="flex flex-wrap gap-3 sm:gap-4">
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg">
+                                  <Ticket className="w-4 h-4 text-yellow-400" />
+                                  <span className="text-sm text-white/70">
+                                    {car.lotteries.length} сугалаа
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg">
+                                  <DollarSign className="w-4 h-4 text-green-400" />
+                                  <span className="text-sm text-white/70">
+                                    {car.ticketPrice.toLocaleString()}₮
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Lottery Numbers */}
+                          <div className="p-4 sm:p-6 bg-black/20 border-t border-white/5">
+                            <div className="grid gap-2 sm:gap-3">
+                              {car.lotteries.map((lottery, i) => (
+                                <div
+                                  key={i}
+                                  className="group/lottery flex items-center justify-between p-3 sm:p-4 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-yellow-400/30 rounded-xl transition-all duration-300"
+                                >
+                                  <div className="flex items-center gap-3 sm:gap-4">
+                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-yellow-400/10 border border-yellow-400/20 flex items-center justify-center flex-shrink-0">
+                                      <Ticket className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
+                                    </div>
+                                    <span className="font-mono font-bold text-yellow-400 tracking-wider text-base sm:text-lg lg:text-xl">
+                                      {lottery.lotteryNumber}
+                                    </span>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">
+                                      Огноо
+                                    </div>
+                                    <div className="text-xs sm:text-sm text-white/60 font-medium">
+                                      {new Date(lottery.createdAt).toLocaleDateString('mn-MN', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric'
+                                      })}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Footer Action */}
+                  <div className="pt-4 border-t border-white/10">
+                    <button
+                      onClick={() => setShowModal(false)}
+                      className="w-full py-3 sm:py-4 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-black rounded-2xl font-bold text-sm sm:text-base transition-all duration-300 shadow-lg hover:shadow-yellow-400/50 hover:scale-[1.02] active:scale-95"
+                    >
+                      Хаах
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

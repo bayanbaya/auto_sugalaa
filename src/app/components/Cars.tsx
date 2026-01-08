@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import React, { useState, useEffect, memo } from "react";
-import { Copy, CheckCircle, ExternalLink, Car as CarIcon, TrendingUp, AlertCircle } from "lucide-react";
+import { Copy, CheckCircle, ExternalLink, Car as CarIcon, TrendingUp, AlertCircle, Sparkles, DollarSign, Ticket } from "lucide-react";
 
 export type Car = {
   id?: string;
@@ -159,10 +159,10 @@ const CarCard = memo(function CarCard({ car, priority = false }: { car: Car; pri
 
   return (
     <li className="group relative">
-      {/* Animated gradient border */}
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-400 via-purple-500 to-blue-400 rounded-2xl sm:rounded-3xl opacity-0 group-hover:opacity-40 blur-sm transition-all duration-500 animate-gradient bg-[length:200%_auto]" />
+      {/* Animated gradient glow - Yellow/Gold theme */}
+      <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 rounded-2xl sm:rounded-[2rem] opacity-0 group-hover:opacity-30 blur transition-all duration-500 animate-gradient bg-[length:200%_auto]" />
 
-      <div className="relative bg-gradient-to-br from-[#1a1a1c] to-[#121214] rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 shadow-2xl hover:shadow-blue-500/10 transition-all duration-500">
+      <div className="relative bg-white/5 backdrop-blur-sm rounded-2xl sm:rounded-[2rem] overflow-hidden border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] hover:shadow-yellow-400/20 transition-all duration-500 hover:border-white/20">
         {/* Image Section */}
         <div className="relative overflow-hidden">
           <Image
@@ -171,7 +171,7 @@ const CarCard = memo(function CarCard({ car, priority = false }: { car: Car; pri
             width={960}
             height={640}
             className={classNames(
-              "aspect-[3/2] w-full object-cover transition-transform duration-700 group-hover:scale-110",
+              "aspect-[16/10] w-full object-cover transition-transform duration-700 group-hover:scale-105",
               imgErrored && "opacity-90"
             )}
             placeholder="blur"
@@ -182,43 +182,105 @@ const CarCard = memo(function CarCard({ car, priority = false }: { car: Car; pri
           />
 
           {/* Overlay gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-          {/* Availability badge */}
-          <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
-            <div className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${left > 0 ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
-              <span className="text-white text-xs sm:text-sm font-bold">
-                {left} үлдсэн
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Content Section */}
-        <div className="p-5 sm:p-6 space-y-4 sm:space-y-5">
-          {/* Car Name & Price */}
-          <div className="space-y-2">
-            <h3 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
-              <CarIcon className="w-5 h-5 text-blue-400 flex-shrink-0" />
-              <span className="truncate">{car.carName || "Тодорхойгүй нэр"}</span>
+          {/* Car name overlay on image */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+            <h3 className="text-xl sm:text-2xl font-bold text-white mb-1 drop-shadow-lg">
+              {car.carName || "Тодорхойгүй нэр"}
             </h3>
             <div className="flex items-center gap-2">
-              <span className="text-xs sm:text-sm text-white/60">Үнэ:</span>
-              <span className="text-lg sm:text-xl font-bold text-green-400">
+              <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
+              <span className="text-base sm:text-lg font-bold text-yellow-400">
                 {String(car.price ?? "—")}₮
               </span>
             </div>
           </div>
 
-          {/* IBAN Section */}
+          {/* Availability badge */}
+          <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+            <div className={classNames(
+              "px-3 py-1.5 sm:px-4 sm:py-2 rounded-full backdrop-blur-xl border flex items-center gap-2 shadow-lg",
+              left > 0
+                ? "bg-green-500/20 border-green-400/30"
+                : "bg-red-500/20 border-red-400/30"
+            )}>
+              <Ticket className={classNames(
+                "w-3.5 h-3.5 sm:w-4 sm:h-4",
+                left > 0 ? "text-green-400" : "text-red-400"
+              )} />
+              <span className={classNames(
+                "text-xs sm:text-sm font-bold",
+                left > 0 ? "text-green-400" : "text-red-400"
+              )}>
+                {left} үлдсэн
+              </span>
+            </div>
+          </div>
+
+          {/* Premium badge if low stock */}
+          {left > 0 && left <= 3 && (
+            <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
+              <div className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-yellow-400/90 backdrop-blur-xl border border-yellow-300/50 flex items-center gap-1.5 shadow-lg animate-pulse">
+                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-black" />
+                <span className="text-xs sm:text-sm font-bold text-black">
+                  Цөөн үлдсэн
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Content Section */}
+        <div className="p-4 sm:p-5 lg:p-6 space-y-3 sm:space-y-4">
+          {/* Progress Section - Moved to top */}
           <div className="space-y-2">
-            <div className="p-3 sm:p-4 bg-white/5 rounded-xl border border-white/10 space-y-2">
+            <div className="flex items-center justify-between text-xs sm:text-sm">
+              <div className="flex items-center gap-2 text-white/60">
+                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-400" />
+                <span>
+                  <span className="font-bold text-white">{sold}</span> / {total} зарагдсан
+                </span>
+              </div>
+              <span className="font-bold text-yellow-400">{percent}%</span>
+            </div>
+
+            {/* Progress bar */}
+            <div
+              className="w-full h-2 sm:h-2.5 rounded-full bg-white/10 overflow-hidden relative"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={percent}
+            >
+              <div
+                className={classNames(
+                  "h-full rounded-full transition-all duration-700 bg-gradient-to-r relative overflow-hidden",
+                  getProgressColor()
+                )}
+                style={{ width: `${percent}%` }}
+              >
+                {/* Animated shine effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+              </div>
+            </div>
+          </div>
+
+          {/* IBAN Section - Redesigned */}
+          <div className="relative">
+            <div className="p-3 sm:p-4 bg-white/5 rounded-xl sm:rounded-2xl border border-white/10 space-y-2.5 hover:bg-white/[0.07] hover:border-yellow-400/20 transition-all duration-300">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/40 uppercase tracking-wider">Данс</span>
+                <span className="text-[10px] sm:text-xs text-white/40 uppercase tracking-wider font-bold">
+                  Дансны дугаар
+                </span>
                 <button
                   onClick={copy}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-blue-400 hover:text-black text-white transition-all duration-300 text-xs font-medium active:scale-95"
+                  className={classNames(
+                    "flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg font-bold text-xs transition-all duration-300 active:scale-95",
+                    copied
+                      ? "bg-yellow-400 text-black"
+                      : "bg-white/10 hover:bg-yellow-400 hover:text-black text-white"
+                  )}
                   aria-label="IBAN хуулах"
                   type="button"
                 >
@@ -235,48 +297,18 @@ const CarCard = memo(function CarCard({ car, priority = false }: { car: Car; pri
                   )}
                 </button>
               </div>
-              <p className="font-mono text-sm sm:text-base text-white font-medium break-all">
+              <p className="font-mono text-sm sm:text-base lg:text-lg text-white font-bold break-all tracking-wider">
                 {car.iban || "—"}
               </p>
-              {copied && car.ibanName && (
-                <p className="text-xs text-green-400 animate-in fade-in slide-in-from-top-2 duration-300">
-                  ✓ Дансны нэр: {car.ibanName}
+              {car.ibanName && (
+                <p className="text-xs text-white/50 pt-1 border-t border-white/5">
+                  {car.ibanName}
                 </p>
               )}
             </div>
           </div>
 
-          {/* Progress Section */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs sm:text-sm">
-              <div className="flex items-center gap-2 text-white/60">
-                <TrendingUp className="w-4 h-4" />
-                <span>
-                  <span className="font-bold text-white">{sold}</span> / {total} зарагдсан
-                </span>
-              </div>
-              <span className="font-bold text-blue-400">{percent}%</span>
-            </div>
-
-            {/* Progress bar */}
-            <div
-              className="w-full h-2.5 sm:h-3 rounded-full bg-white/10 overflow-hidden"
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={percent}
-            >
-              <div
-                className={classNames(
-                  "h-full rounded-full transition-all duration-700 bg-gradient-to-r",
-                  getProgressColor()
-                )}
-                style={{ width: `${percent}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Facebook Link Button */}
+          {/* Facebook Link Button - Redesigned */}
           {car.fbLink && (
             <a
               href={car.fbLink}
@@ -284,17 +316,9 @@ const CarCard = memo(function CarCard({ car, priority = false }: { car: Car; pri
               rel="noopener noreferrer"
               className="group/btn block"
             >
-              <div className="w-full px-4 py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold text-sm sm:text-base text-center transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/50 active:scale-95">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  className="w-5 h-5 transition-transform duration-300 group-hover/btn:scale-110"
-                  fill="currentColor"
-                >
-                  <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24h11.495V14.708h-3.13v-3.622h3.13V8.413c0-3.1 1.894-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24h-1.918c-1.504 0-1.795.715-1.795 1.763v2.314h3.587l-.467 3.622h-3.12V24h6.116C23.407 24 24 23.407 24 22.675V1.325C24 .593 23.407 0 22.675 0z" />
-                </svg>
-                <span>Дэлгэрэнгүй</span>
-                <ExternalLink className="w-4 h-4" />
+              <div className="w-full px-4 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-amber-500 text-black font-bold text-sm sm:text-base text-center transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-yellow-400/50 active:scale-[0.98] hover:scale-[1.02]">
+                <span>Дэлгэрэнгүй үзэх</span>
+                <ExternalLink className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
               </div>
             </a>
           )}
@@ -343,26 +367,25 @@ export default function Cars() {
 
   if (loading) {
     return (
-      <div className="space-y-6 sm:space-y-8">
+      <div className="space-y-6 sm:space-y-8 lg:space-y-10">
         {/* Header Skeleton */}
-        <div className="space-y-3">
-          <div className="h-8 sm:h-10 w-64 sm:w-80 bg-white/10 rounded-xl animate-pulse" />
-          <div className="h-4 w-48 bg-white/5 rounded-lg animate-pulse" />
+        <div className="space-y-3 sm:space-y-4">
+          <div className="h-10 sm:h-12 w-72 sm:w-96 bg-white/10 rounded-2xl animate-pulse" />
+          <div className="h-4 w-56 bg-white/5 rounded-lg animate-pulse" />
         </div>
 
         {/* Cards Skeleton */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-2xl sm:rounded-3xl overflow-hidden"
+              className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-[2rem] overflow-hidden"
             >
-              <div className="aspect-[3/2] bg-white/10 animate-pulse" />
-              <div className="p-5 sm:p-6 space-y-4">
-                <div className="h-6 bg-white/10 rounded-lg animate-pulse" />
-                <div className="h-4 bg-white/5 rounded-lg animate-pulse w-3/4" />
-                <div className="h-12 bg-white/10 rounded-xl animate-pulse" />
+              <div className="aspect-[16/10] bg-white/10 animate-pulse" />
+              <div className="p-4 sm:p-5 space-y-3">
                 <div className="h-3 bg-white/5 rounded-full animate-pulse" />
+                <div className="h-16 bg-white/10 rounded-xl animate-pulse" />
+                <div className="h-10 bg-white/10 rounded-xl animate-pulse" />
               </div>
             </div>
           ))}
@@ -398,37 +421,44 @@ export default function Cars() {
 
   return (
     <SimpleErrorBoundary>
-      <div className="space-y-6 sm:space-y-8">
-        {/* Header */}
-        <div className="space-y-3">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-              <CarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+      <div className="space-y-6 sm:space-y-8 lg:space-y-10">
+        {/* Header - Redesigned */}
+        <div className="space-y-3 sm:space-y-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="relative">
+              <div className="absolute inset-0 bg-yellow-400/20 blur-xl" />
+              <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg">
+                <CarIcon className="w-6 h-6 sm:w-7 sm:h-7 text-black" />
+              </div>
             </div>
-            <span>Зарлагдсан машинууд</span>
-          </h2>
-          <p className="text-sm sm:text-base text-white/50 ml-0 sm:ml-[60px]">
-            Доорх данс руу гүйлгээ хийж сугалаанд оролцоорой
+            <div>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold bg-gradient-to-r from-white via-white to-white/60 bg-clip-text text-transparent">
+                Сугалаанд оролцох
+              </h2>
+            </div>
+          </div>
+          <p className="text-sm sm:text-base text-white/60 leading-relaxed ml-0 sm:ml-[72px]">
+            Доорх машинуудын данс руу гүйлгээ хийж сугалаанд оролцоорой. Гүйлгээний утга дээр <span className="font-bold text-yellow-400">утасны дугаараа</span> бичнэ үү.
           </p>
         </div>
 
-        {/* Empty State */}
+        {/* Empty State - Redesigned */}
         {isEmpty && (
-          <div className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-8 sm:p-12 text-center">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full bg-white/10 flex items-center justify-center mb-4">
-              <CarIcon className="w-8 h-8 sm:w-10 sm:h-10 text-white/40" />
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl sm:rounded-[2rem] p-10 sm:p-16 text-center">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-full bg-white/10 border border-white/10 flex items-center justify-center mb-6">
+              <CarIcon className="w-10 h-10 sm:w-12 sm:h-12 text-white/40" />
             </div>
-            <h3 className="text-lg sm:text-xl font-bold text-white mb-2">
-              Машин байхгүй байна
+            <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">
+              Одоогоор машин байхгүй байна
             </h3>
-            <p className="text-sm sm:text-base text-white/50">
-              Дараа дахин шалгана уу
+            <p className="text-sm sm:text-base text-white/50 max-w-md mx-auto">
+              Удахгүй шинэ машинууд нэмэгдэх тул дахин зочилно уу
             </p>
           </div>
         )}
 
-        {/* Cars Grid */}
-        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+        {/* Cars Grid - Updated spacing */}
+        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
           {cars.map((car, i) => (
             <CarCard key={car.id || `${car.iban}-${car.carName}-${i}`} car={car} priority={i < 2} />
           ))}

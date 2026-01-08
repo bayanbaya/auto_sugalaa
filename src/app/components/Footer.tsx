@@ -12,101 +12,100 @@ export default function Footer() {
   }
 
   return (
-    <footer className="relative mt-auto border-t border-white/5 bg-black/20 backdrop-blur-xl">
-      {/* Top gradient line */}
-      <div className="h-px bg-gradient-to-r from-transparent via-yellow-400/20 to-transparent" />
+    <footer className="relative mt-auto border-t border-white/[0.06] bg-zinc-950/30 backdrop-blur-xl">
+      {/* Subtle top border - Premium detail */}
+      <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12">
-          {/* Brand Section */}
-          <div className="space-y-4">
+      {/* Main container - Precise spacing */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 sm:gap-12 lg:gap-16">
+
+          {/* Brand Section - Refined typography */}
+          <div className="space-y-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg shadow-yellow-500/20">
-                <Heart className="w-5 h-5 text-black" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 p-[1px]">
+                <div className="w-full h-full rounded-[11px] bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center">
+                  <Heart className="w-5 h-5 text-black" />
+                </div>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">MB Авто Худалдаа</h3>
-                <p className="text-xs text-white/40">Premium Lottery Service</p>
+                <h3 className="text-base font-semibold text-white tracking-[-0.01em]">MB Авто Худалдаа</h3>
+                <p className="text-[11px] text-zinc-500 font-medium tracking-wide">PREMIUM LOTTERY</p>
               </div>
             </div>
-            <p className="text-sm text-white/60 leading-relaxed">
+            <p className="text-[13px] sm:text-sm text-zinc-400 leading-relaxed">
               Монголын хамгийн том, найдвартай автомашины сугалаа.
               Таны мөрөөдлийг бодит болгох найдвартай түнш.
             </p>
           </div>
 
-          {/* Contact Section */}
-          <div className="space-y-4">
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider">Холбоо барих</h4>
+          {/* Contact Section - Clean layout */}
+          <div className="space-y-5">
+            <h4 className="text-[11px] font-semibold text-zinc-300 uppercase tracking-wider">Холбоо барих</h4>
             <div className="space-y-3">
               <a
                 href="tel:+97699431042"
-                className="group flex items-center gap-3 text-sm text-white/60 hover:text-white transition-colors"
+                className="group flex items-center gap-3 text-[13px] sm:text-sm text-zinc-400 hover:text-white transition-colors duration-200"
               >
-                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                  <Phone className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.06] flex items-center justify-center group-hover:bg-white/[0.06] group-hover:border-white/10 transition-all duration-200">
+                  <Phone className="w-[15px] h-[15px]" />
                 </div>
                 <span>+976 9943-1042</span>
               </a>
 
               <a
                 href="mailto:info@mbsugalaa.mn"
-                className="group flex items-center gap-3 text-sm text-white/60 hover:text-white transition-colors"
+                className="group flex items-center gap-3 text-[13px] sm:text-sm text-zinc-400 hover:text-white transition-colors duration-200"
               >
-                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                  <Mail className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.06] flex items-center justify-center group-hover:bg-white/[0.06] group-hover:border-white/10 transition-all duration-200">
+                  <Mail className="w-[15px] h-[15px]" />
                 </div>
                 <span>info@mbsugalaa.mn</span>
               </a>
 
-              <div className="flex items-start gap-3 text-sm text-white/60">
-                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
-                  <MapPin className="w-4 h-4" />
+              <div className="flex items-start gap-3 text-[13px] sm:text-sm text-zinc-400">
+                <div className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
+                  <MapPin className="w-[15px] h-[15px]" />
                 </div>
-                <span className="pt-1">Улаанбаатар, Монгол Улс</span>
+                <span className="pt-1.5">Улаанбаатар, Монгол Улс</span>
               </div>
             </div>
           </div>
 
-          {/* CTA Section */}
-          <div className="space-y-4">
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider">Вэбсайт хэрэгтэй юу?</h4>
-            <p className="text-sm text-white/60 leading-relaxed">
+          {/* CTA Section - Premium button */}
+          <div className="space-y-5">
+            <h4 className="text-[11px] font-semibold text-zinc-300 uppercase tracking-wider">Вэбсайт хэрэгтэй юу?</h4>
+            <p className="text-[13px] sm:text-sm text-zinc-400 leading-relaxed">
               Таны бизнест тохирсон, мэргэжлийн вэбсайт бүтээх үйлчилгээ үзүүлнэ.
             </p>
             <a
               href="tel:+97699431042"
-              className="group relative inline-flex"
+              className="group relative inline-flex items-center gap-2 px-4 h-10 rounded-lg bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 text-black font-semibold text-sm shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 transition-all duration-200 ease-out active:scale-[0.97]"
             >
-              {/* Glow effect */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-xl blur opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
-
-              <div className="relative flex items-center gap-2 px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bold text-sm sm:text-base shadow-lg hover:shadow-yellow-500/50 transition-all duration-300 active:scale-95">
-                <Phone className="w-4 h-4" />
-                <span>Залгаад захиалаарай</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </div>
+              <Phone className="w-[15px] h-[15px]" />
+              <span>Залгаад захиалаарай</span>
+              <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
         </div>
 
-        {/* Bottom Section */}
-        <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-white/5">
+        {/* Bottom Section - Minimal */}
+        <div className="mt-12 sm:mt-16 pt-8 border-t border-white/[0.06]">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            {/* Copyright */}
-            <p className="text-xs sm:text-sm text-white/40 text-center sm:text-left">
+            {/* Copyright - Subtle */}
+            <p className="text-xs text-zinc-500 text-center sm:text-left">
               © {year} MB Sugalaa. Бүх эрх хуулиар хамгаалагдсан.
             </p>
 
-            {/* Social Links */}
-            <div className="flex items-center gap-4">
+            {/* Social Links - Minimal */}
+            <div className="flex items-center gap-3">
               <a
                 href="#"
-                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors group"
+                className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] hover:border-white/10 flex items-center justify-center transition-all duration-200 group"
               >
                 <svg
                   viewBox="0 0 24 24"
-                  className="w-4 h-4 text-white/40 group-hover:text-white transition-colors"
+                  className="w-[15px] h-[15px] text-zinc-500 group-hover:text-white transition-colors duration-200"
                   fill="currentColor"
                 >
                   <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24h11.495V14.708h-3.13v-3.622h3.13V8.413c0-3.1 1.894-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24h-1.918c-1.504 0-1.795.715-1.795 1.763v2.314h3.587l-.467 3.622h-3.12V24h6.116C23.407 24 24 23.407 24 22.675V1.325C24 .593 23.407 0 22.675 0z" />
@@ -116,9 +115,9 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Trust Badge */}
-        <div className="mt-6 sm:mt-8 flex items-center justify-center gap-2 text-xs text-white/30">
-          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+        {/* Trust Badge - Subtle accent */}
+        <div className="mt-8 flex items-center justify-center gap-2 text-xs text-zinc-600">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/60" />
           <span>Найдвартай, аюулгүй үйлчилгээ</span>
         </div>
       </div>
