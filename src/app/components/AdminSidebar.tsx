@@ -3,12 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Car, 
-  Users, 
-  Settings, 
-  PieChart, 
+import {
+  LayoutDashboard,
+  Car,
+  Users,
+  PieChart,
   LogOut,
   Bell
 } from 'lucide-react';
@@ -18,10 +17,9 @@ export function AdminSidebar() {
 
   const menuItems = [
     { name: 'Машины жагсаалт', icon: LayoutDashboard, href: '/admin' },
-    { name: 'Хэрэглэгчид', icon: Users, href: '/admin/users' },
-    { name: 'Статистик', icon: PieChart, href: '/admin/stats' },
-    { name: 'Мэдэгдэл', icon: Bell, href: '/admin/notifications' },
-    { name: 'Тохиргоо', icon: Settings, href: '/admin/settings' },
+    { name: 'Нийт суглаа', icon: PieChart, href: '/admin/all-lottery' },
+     { name: 'Алдаатай гүйлгээ', icon: Users, href: '/admin/error-tran' },
+    { name: 'Нийт гүйлгээ', icon: Bell, href: '/admin/all-tran' },
   ];
 
   return (
