@@ -10,8 +10,8 @@ const pool = mysql.createPool({
   connectionLimit: 10,
 });
 
-interface LotteryRow extends RowDataPacket {
-  lotteryNumber: string;
+interface CountRow extends RowDataPacket {
+  cnt: number;
 }
 
 function toMySQLDatetime(date: string | Date) {
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   let connection: mysql.PoolConnection | null = null;
 
   try {
-    const { phone, lotteryName, transactionId, amount, date, description } = await req.json();
+    const { phone, lotteryName, amount } = await req.json();
 
     if (!phone || !lotteryName || !amount) {
       return NextResponse.json(
@@ -40,11 +40,11 @@ export async function POST(req: NextRequest) {
     await connection.beginTransaction();
 
     // Одоогийн сугалааны sequence авах
-    const [seqRows] = await connection.query<RowDataPacket[]>(
+    const [seqRows] = await connection.query<CountRow[]>(
       'SELECT COUNT(*) cnt FROM mblottery WHERE carId = ?',
       [lotteryName]
     );
-    const currentSeq = (seqRows[0] as any).cnt;
+    const currentSeq = seqRows[0].cnt;
 
     // Lottery дугаар үүсгэх
     const lotteryNumber = generateLotteryNumber(lotteryName, currentSeq + 1);

@@ -9,9 +9,7 @@ import {
   DollarSign,
   Phone,
   CreditCard,
-  User,
   Copy,
-  Info,
   Sparkles,
   Clock,
   X,
@@ -430,6 +428,7 @@ const App = () => {
                         <div className="relative bg-[#0a0a0b] border border-white/10 rounded-2xl sm:rounded-3xl overflow-hidden">
                           {/* Car Info */}
                           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 sm:p-6 bg-gradient-to-br from-white/5 to-transparent">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={car.carImage}
                               className="w-full sm:w-40 lg:w-48 h-48 sm:h-32 lg:h-36 object-cover rounded-xl sm:rounded-2xl shadow-2xl border border-white/10"

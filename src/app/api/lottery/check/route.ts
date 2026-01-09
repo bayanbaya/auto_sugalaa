@@ -1,5 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import mysql from 'mysql2/promise';
+import mysql, { RowDataPacket } from 'mysql2/promise';
+
+interface LotteryRow extends RowDataPacket {
+  carName: string;
+  lotteryNumber: string;
+  createdAt: Date;
+  transactionAmount: number;
+  ticketPrice: string | number;
+  carImage: string;
+}
+
+interface LatestCheckRow extends RowDataPacket {
+  latestCheck: Date | null;
+}
+
+interface GroupedCar {
+  carName: string;
+  carImage: string;
+  ticketPrice: string | number;
+  lotteries: Array<{
+    lotteryNumber: string;
+    createdAt: Date;
+    transactionAmount: number;
+  }>;
+}
 
 export async function POST(request: NextRequest) {
   let connection;
@@ -40,15 +64,15 @@ export async function POST(request: NextRequest) {
       [phoneNumber]
     );
 
-    const lotteries = rows as any[];
+    const lotteries = rows as LotteryRow[];
 
     if (lotteries.length === 0) {
       // Get the latest lottery createdAt to show when the last check was done
-      const [latestRows] = await connection.query(
+      const [latestRows] = await connection.query<LatestCheckRow[]>(
         `SELECT MAX(createdAt) as latestCheck FROM mblottery`
       );
 
-      const latestCheck = (latestRows as any[])[0]?.latestCheck || null;
+      const latestCheck = latestRows[0]?.latestCheck || null;
 
       return NextResponse.json(
         {
@@ -62,7 +86,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Group lotteries by car
-    const groupedByCar = lotteries.reduce((acc: any, lottery: any) => {
+    const groupedByCar = lotteries.reduce((acc: Record<string, GroupedCar>, lottery: LotteryRow) => {
       const carName = lottery.carName || 'Тодорхойгүй';
       if (!acc[carName]) {
         acc[carName] = {
@@ -78,7 +102,7 @@ export async function POST(request: NextRequest) {
         transactionAmount: lottery.transactionAmount,
       });
       return acc;
-    }, {});
+    }, {} as Record<string, GroupedCar>);
 
     const result = Object.values(groupedByCar);
 

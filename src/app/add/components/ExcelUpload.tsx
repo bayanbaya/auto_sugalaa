@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import * as XLSX from 'xlsx';
 import { Upload, FileSpreadsheet, RefreshCw } from 'lucide-react';
-import { CarData, LotteryEntry, ExcelRow, ValidationResult } from '../types';
+import { CarData, LotteryEntry, ExcelRow, ValidationResult, ImportStats } from '../types';
 
 interface ExcelUploadProps {
   carData: CarData | null;
@@ -15,7 +15,7 @@ interface ExcelUploadProps {
   onFileSet: (file: File | null) => void;
   onDataParsed: (data: LotteryEntry[]) => void;
   onError: (error: string) => void;
-  onImportComplete: (stats: any) => void;
+  onImportComplete: (stats: ImportStats | null) => void;
   onLastSavedDateUpdate: (date: string) => void;
   onProcessingChange: (isProcessing: boolean) => void;
   onProgressUpdate: (progress: number, message: string) => void;
@@ -113,7 +113,8 @@ export function ExcelUpload({
       const result = validateAndCleanEntry(row, index);
       // ✅ БҮХ мөрийг авна - validation шалгалтгүй
       if (result) {
-        const { isValid: _isValid, ...entryData } = result;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { isValid, ...entryData } = result;
         lotteryEntries.push(entryData as LotteryEntry);
       }
     });

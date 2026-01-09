@@ -202,6 +202,7 @@ export default function AdminPage() {
                 {/* Image Section */}
                 <div className="relative h-52 bg-slate-100 overflow-hidden">
                   {car.img && car.img.trim() !== '' ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={car.img}
                       alt={car.carName}

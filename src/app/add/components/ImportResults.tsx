@@ -2,6 +2,28 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { ImportStats } from '../types';
 
+interface Transaction {
+  id?: number;
+  credit: number;
+  guildgeeniiOgnoo: string;
+  guildgeeniiUtga?: string;
+  islottery?: number;
+}
+
+interface Lottery {
+  lotteryNumber: string;
+  createdAt: string;
+  transactionAmount: number;
+  phoneNumber?: string;
+}
+
+interface SkippedDetail {
+  credit: number;
+  guildgeeniiOgnoo: string;
+  guildgeeniiUtga: string;
+  skipReason?: string;
+}
+
 interface ImportResultsProps {
   stats: ImportStats;
 }
@@ -84,7 +106,7 @@ export function ImportResults({ stats }: ImportResultsProps) {
           </div>
           {stats.transactions && stats.transactions.length > 0 ? (
             <div className="space-y-2  overflow-y-auto">
-              {stats.transactions.map((tx: any, i: number) => (
+              {stats.transactions.map((tx: Transaction, i: number) => (
                 <div key={i} className="bg-[#f5f5f7] rounded-2xl p-3 hover:bg-[#e5e5ea] transition-all active:scale-[0.98]">
                   <div className="flex items-center justify-between mb-2">
                     <div>
@@ -122,14 +144,14 @@ export function ImportResults({ stats }: ImportResultsProps) {
           {stats.lotteries && stats.lotteries.length > 0 ? (
             <div className="space-y-2  overflow-y-auto">
               {(() => {
-                const phoneGroups = stats.lotteries.reduce((acc: any, lottery: any) => {
+                const phoneGroups = stats.lotteries.reduce((acc: Record<string, Lottery[]>, lottery: Lottery) => {
                   const phone = lottery.phoneNumber || 'Тодорхойгүй';
                   if (!acc[phone]) acc[phone] = [];
                   acc[phone].push(lottery);
                   return acc;
-                }, {});
+                }, {} as Record<string, Lottery[]>);
 
-                return Object.entries(phoneGroups).map(([phone, lotteries]: [string, any]) => (
+                return Object.entries(phoneGroups).map(([phone, lotteries]: [string, Lottery[]]) => (
                   <div key={phone} className="bg-[#f5f5f7] rounded-2xl overflow-hidden">
                     <button
                       onClick={() => setSelectedPhone(selectedPhone === phone ? null : phone)}
@@ -158,7 +180,7 @@ export function ImportResults({ stats }: ImportResultsProps) {
 
                     {selectedPhone === phone && (
                       <div className="px-3 pb-3 space-y-2">
-                        {lotteries.map((lottery: any, i: number) => (
+                        {lotteries.map((lottery: Lottery, i: number) => (
                           <div key={i} className="bg-white rounded-xl p-2.5">
                             <div className="flex items-center justify-between">
                               <p className="text-[12px] font-mono font-semibold text-[#007aff]">{lottery.lotteryNumber}</p>
@@ -188,7 +210,7 @@ export function ImportResults({ stats }: ImportResultsProps) {
           </div>
           {stats.skippedDetails && stats.skippedDetails.length > 0 ? (
             <div className="space-y-2  overflow-y-auto">
-              {stats.skippedDetails.map((item: any, i: number) => (
+              {stats.skippedDetails.map((item: SkippedDetail, i: number) => (
                 <div key={i} className="bg-[#f5f5f7] rounded-2xl p-3 hover:bg-[#e5e5ea] transition-all">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-[15px] font-semibold text-[#ff3b30] tabular-nums">{item.credit?.toLocaleString()}₮  <span className='text-[#86818b]' >{item.guildgeeniiUtga}</span></p>

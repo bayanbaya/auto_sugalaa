@@ -39,12 +39,34 @@ export interface ValidationResult {
   isValid: boolean;
 }
 
+interface Transaction {
+  id?: number;
+  credit: number;
+  guildgeeniiOgnoo: string;
+  guildgeeniiUtga?: string;
+  islottery?: number;
+}
+
+interface Lottery {
+  lotteryNumber: string;
+  createdAt: string;
+  transactionAmount: number;
+  phoneNumber?: string;
+}
+
+interface SkippedDetail {
+  credit: number;
+  guildgeeniiOgnoo: string;
+  guildgeeniiUtga: string;
+  skipReason?: string;
+}
+
 export interface ImportStats {
   totalTransactions: number;
   totalLotteries: number;
   skippedTransactions: number;
   reasons: string[];
-  transactions?: any[];
-  lotteries?: any[];
-  skippedDetails?: any[];
+  transactions?: Transaction[];
+  lotteries?: Lottery[];
+  skippedDetails?: SkippedDetail[];
 }

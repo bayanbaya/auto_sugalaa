@@ -28,7 +28,6 @@ function LotteryImportContent() {
   const [lastSavedDate, setLastSavedDate] = useState<string | null>(null);
   const [employeeName, setEmployeeName] = useState<string>('');
   const [importStats, setImportStats] = useState<ImportStats | null>(null);
-  const [editingTransaction, setEditingTransaction] = useState<any | null>(null);
 
   // sessionStorage-с admin_username татах
   useEffect(() => {

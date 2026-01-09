@@ -121,9 +121,45 @@ export async function POST(request: Request) {
     let skippedDuplicate = 0; // Давхардсан гүйлгээ
 
     /* ==== Tracking arrays ==== */
-    const allTransactions: any[] = [];
-    const allLotteries: any[] = [];
-    const skippedDetails: any[] = [];
+    interface TrackedTransaction {
+      id: number;
+      guildgeeniiOgnoo: string;
+      salbar: string;
+      credit: number;
+      guildgeeniiUtga: string;
+      haritsanDans: string;
+      ehniilUldegdel: number;
+      etsiin_Uldegdel: number;
+      importDate: string;
+      rowNumber: number;
+      islottery: number;
+    }
+
+    interface TrackedLottery {
+      lotteryNumber: string;
+      createdAt: string;
+      bankTransactionId: number;
+      carId: string;
+      transactionAmount: number;
+      phoneNumber: string;
+    }
+
+    interface TrackedSkipped {
+      guildgeeniiOgnoo: string;
+      salbar: string;
+      credit: number;
+      guildgeeniiUtga: string;
+      haritsanDans: string;
+      ehniilUldegdel: number;
+      etsiin_Uldegdel: number;
+      importDate: string;
+      rowNumber: number;
+      skipReason: string;
+    }
+
+    const allTransactions: TrackedTransaction[] = [];
+    const allLotteries: TrackedLottery[] = [];
+    const skippedDetails: TrackedSkipped[] = [];
 
     /* ==== LOOP ==== */
     for (const row of data) {

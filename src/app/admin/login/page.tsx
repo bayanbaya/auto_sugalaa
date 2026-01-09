@@ -35,7 +35,7 @@ export default function Login() {
       } else {
         setError(data.error || 'Нэвтрэх явцад алдаа гарлаа');
       }
-    } catch (err) {
+    } catch {
       setError('Сервертэй холбогдоход алдаа гарлаа');
     } finally {
       setLoading(false);

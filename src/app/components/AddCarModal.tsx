@@ -312,6 +312,7 @@ export const AddCarModal = ({ isOpen, onClose, onSuccess }: AddCarModalProps) =>
                       overflow-hidden group transition-all"
                     >
                       {imagePreview ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={imagePreview}
                           alt="Preview"
@@ -355,11 +356,11 @@ export const AddCarModal = ({ isOpen, onClose, onSuccess }: AddCarModalProps) =>
                         {item.icon} {item.label} <span className="text-red-400">*</span>
                       </label>
                       <input
-                        value={(formData as any)[item.key]}
+                        value={formData[item.key as keyof FormData]}
                         onChange={(e) =>
                           item.key === 'price'
                             ? handlePriceChange(e.target.value)
-                            : handleInputChange(item.key as any, e.target.value)
+                            : handleInputChange(item.key as keyof FormData, e.target.value)
                         }
                         placeholder={item.placeholder}
                         className={`w-full px-3 py-2.5 rounded-xl bg-white/5 border text-sm
