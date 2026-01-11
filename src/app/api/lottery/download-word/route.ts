@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle } from 'docx';
-import mysql from 'mysql2/promise';
+import mysql, { RowDataPacket } from 'mysql2/promise';
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
@@ -15,6 +15,12 @@ const pool = mysql.createPool({
 interface LotteryData {
   lotteryNumber: string;
   phoneNumber: string;
+}
+
+interface CarData extends RowDataPacket {
+  carName: string;
+  total: number;
+  sold: number;
 }
 
 export async function POST(request: NextRequest) {
@@ -33,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     try {
       // Fetch car details
-      const [carRows]: any = await connection.query(
+      const [carRows] = await connection.query<CarData[]>(
         'SELECT carName, total, sold FROM lotteryName WHERE id = ?',
         [carId]
       );
@@ -213,7 +219,7 @@ export async function POST(request: NextRequest) {
       const buffer = await Packer.toBuffer(doc);
 
       // Return as downloadable file
-      return new NextResponse(buffer, {
+      return new NextResponse(new Uint8Array(buffer), {
         headers: {
           'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
           'Content-Disposition': `attachment; filename="Sugalaa_${car.carName}_${new Date().toISOString().split('T')[0]}.docx"`,
