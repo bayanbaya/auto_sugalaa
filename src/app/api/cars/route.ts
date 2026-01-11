@@ -31,7 +31,7 @@ export async function GET() {
   try {
     // RowDataPacket interface ашиглан type safety хангах
     const [rows] = await pool.query<RowDataPacket[]>(
-      "SELECT id, img, carName, iban, ibanName, price, fbLink, total, sold FROM lotteryName WHERE STATUS = 'active'"
+      "SELECT id, img, carName, iban, ibanName, price, fbLink, total, sold FROM lotteryName "
     );
 
     // fill хувь тооцоолж, Car төрөлд хөрвүүлэх

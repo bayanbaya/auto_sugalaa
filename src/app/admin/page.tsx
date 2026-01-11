@@ -87,7 +87,7 @@ export default function AdminPage() {
     return String(price).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
-  // Төлөв өөрчлөх (Устгах/Идэвхгүй болгох)
+  // Машин устгах (Бодитоор устгах)
   const handleDeleteClick = async (carId: string, carName: string) => {
     try {
       // Эхлээд lottery тоог татах
@@ -104,24 +104,25 @@ export default function AdminPage() {
         return;
       }
 
-      const response = await fetch('/api/cars/update-status', {
-        method: 'PATCH',
+      const response = await fetch('/api/cars/delete', {
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id: carId, status: 'inactive' }),
+        body: JSON.stringify({ id: carId }),
       });
 
       if (!response.ok) {
-        throw new Error('Төлөв өөрчлөхөд алдаа гарлаа');
+        throw new Error('Машин устгахад алдаа гарлаа');
       }
 
-      // Local state шинэчлэх (Жагсаалтаас шууд алга болно)
-      setCars((prevCars) =>
-        prevCars.map((car) =>
-          car.id === carId ? { ...car, status: 'inactive' } : car
-        )
-      );
+      const result = await response.json();
+
+      // Local state шинэчлэх (Жагсаалтаас шууд арилна)
+      setCars((prevCars) => prevCars.filter((car) => car.id !== carId));
+
+      // Амжилттай мэдэгдэл
+      alert(result.message || 'Машин амжилттай устгагдлаа');
     } catch (err) {
       console.error('Delete error:', err);
       alert('Устгахад алдаа гарлаа');
