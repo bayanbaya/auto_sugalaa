@@ -166,14 +166,14 @@ export default function AllTransactionsPage() {
 
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+           <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Машин сонгох
                 </label>
                 <select
                   value={selectedCar}
                   onChange={(e) => setSelectedCar(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-medium text-slate-700"
                 >
                   {cars.map(car => (
                     <option key={car.id} value={car.id}>{car.carName}</option>
