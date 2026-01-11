@@ -55,7 +55,7 @@ export default function ErrorTransactionsPage() {
 
   const fetchCars = async () => {
     try {
-      const response = await fetch('/api/cars');
+      const response = await fetch('/api/cars/all');
       const data = await response.json();
       if (data.success) {
         setCars(data.data);

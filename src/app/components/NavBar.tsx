@@ -8,7 +8,8 @@ export default function Navbar() {
   const pathname = usePathname();
 
   // /add route дээр Navbar нуух
-  if (pathname.startsWith("/add") || pathname.startsWith("/admin") || pathname.startsWith("/login")) {
+  if (pathname.startsWith("/add") || pathname.startsWith("/admin") || pathname.startsWith("/login")
+  || pathname.startsWith("/admin/error-tran") || pathname.startsWith("/login/all-lottery") || pathname.startsWith("/login/all-lottery") || pathname.startsWith("/admin/all-tran") ) {
     return null;
   }
 

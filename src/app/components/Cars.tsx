@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState, useEffect, memo } from "react";
+import React, { useState, useEffect, memo, useMemo, useCallback } from "react";
 import { Copy, CheckCircle, ExternalLink, Car as CarIcon, TrendingUp, AlertCircle, Sparkles, DollarSign, Ticket } from "lucide-react";
 
 export type Car = {
@@ -334,9 +334,9 @@ export default function Cars() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
-  const isEmpty = !loading && !err && cars.length === 0;
+  const isEmpty = useMemo(() => !loading && !err && cars.length === 0, [loading, err, cars.length]);
 
-  const loadCars = async () => {
+  const loadCars = useCallback(async () => {
     setLoading(true);
     setErr(null);
     try {
@@ -349,7 +349,7 @@ export default function Cars() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -363,7 +363,7 @@ export default function Cars() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [loadCars]);
 
   if (loading) {
     return (

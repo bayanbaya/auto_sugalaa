@@ -7,7 +7,8 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   // /add route дээр Footer нуух
-  if (pathname.startsWith("/add") || pathname.startsWith("/admin") || pathname.startsWith("/login")) {
+  if (pathname.startsWith("/add") || pathname.startsWith("/admin") || pathname.startsWith("/login")
+  || pathname.startsWith("/admin/error-tran") || pathname.startsWith("/login/all-lottery") || pathname.startsWith("/login/all-lottery") || pathname.startsWith("/admin/all-tran")) {
     return null;
   }
 

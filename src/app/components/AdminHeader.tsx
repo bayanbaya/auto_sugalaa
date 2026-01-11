@@ -23,7 +23,7 @@ export const AdminHeader = ({
 
           {/* Title Area */}
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-200">
+            <div className="p-2.5 bg-white">
               <LayoutGrid className="w-6 h-6 text-white" />
             </div>
             <div>

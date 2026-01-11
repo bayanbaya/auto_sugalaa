@@ -14,15 +14,17 @@ export type Car = {
   fill?: number;
 };
 
-// MySQL холболтын pool үүсгэх
+// MySQL холболтын pool үүсгэх - оптимизацитай
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 20, // Нэмэгдүүлсэн
   queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0,
 });
 
 export async function GET() {
@@ -52,7 +54,11 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json(cars);
+    return NextResponse.json(cars, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+      },
+    });
   } catch (err) {
     console.error("DB error:", err);
     return NextResponse.json(
@@ -61,3 +67,6 @@ export async function GET() {
     );
   }
 }
+
+// ISR - 30 секунд тутамд шинэчлэгдэнэ
+export const revalidate = 30;
