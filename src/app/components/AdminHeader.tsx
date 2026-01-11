@@ -61,10 +61,10 @@ export const AdminHeader = ({
 
             <button
               onClick={onAddClick}
-              className="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 font-medium active:scale-95"
+              className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 font-medium active:scale-95"
             >
               <Plus className="w-5 h-5" />
-              <span>Нэмэх</span>
+              <span className="hidden sm:inline">Нэмэх</span>
             </button>
           </div>
 
