@@ -26,7 +26,7 @@ interface LotteryData {
 
 export default function AllLotteryPage() {
   const [cars, setCars] = useState<CarData[]>([]);
-  const [selectedCar, setSelectedCar] = useState<string>('all');
+  const [selectedCar, setSelectedCar] = useState<string>('');
   const [lotteries, setLotteries] = useState<LotteryData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,8 +49,10 @@ export default function AllLotteryPage() {
     try {
       const response = await fetch('/api/cars/all');
       const data = await response.json();
-      if (data.success) {
+      if (data.success && data.data.length > 0) {
         setCars(data.data);
+        // Хамгийн сүүлийн машиныг автоматаар сонгох
+        setSelectedCar(data.data[0].id);
       }
     } catch (err) {
       console.error('Error fetching cars:', err);
@@ -130,9 +132,8 @@ export default function AllLotteryPage() {
                 <select
                   value={selectedCar}
                   onChange={(e) => setSelectedCar(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-medium text-slate-700"
                 >
-                  <option value="all">Бүгд</option>
                   {cars.map(car => (
                     <option key={car.id} value={car.id}>{car.carName}</option>
                   ))}

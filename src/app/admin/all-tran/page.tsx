@@ -35,7 +35,7 @@ interface TransactionData {
 
 export default function AllTransactionsPage() {
   const [cars, setCars] = useState<CarData[]>([]);
-  const [selectedCar, setSelectedCar] = useState<string>('all');
+  const [selectedCar, setSelectedCar] = useState<string>('');
   const [transactions, setTransactions] = useState<TransactionData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,8 +58,10 @@ export default function AllTransactionsPage() {
     try {
       const response = await fetch('/api/cars/all');
       const data = await response.json();
-      if (data.success) {
+      if (data.success && data.data.length > 0) {
         setCars(data.data);
+        // Хамгийн сүүлийн машиныг автоматаар сонгох
+        setSelectedCar(data.data[0].id);
       }
     } catch (err) {
       console.error('Error fetching cars:', err);
@@ -149,25 +151,7 @@ export default function AllTransactionsPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-500">Сугалаатай</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.withLottery}</p>
-                </div>
-                <CheckCircle2 className="w-10 h-10 text-green-600 opacity-20" />
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-500">Сугалаагүй</p>
-                  <p className="text-2xl font-bold text-red-600">{stats.withoutLottery}</p>
-                </div>
-                <XCircle className="w-10 h-10 text-red-600 opacity-20" />
-              </div>
-            </div>
+           
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
               <div className="flex items-center justify-between">
@@ -191,7 +175,6 @@ export default function AllTransactionsPage() {
                   onChange={(e) => setSelectedCar(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                 >
-                  <option value="all">Бүгд</option>
                   {cars.map(car => (
                     <option key={car.id} value={car.id}>{car.carName}</option>
                   ))}
