@@ -28,8 +28,10 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        // sessionStorage-д username хадгалах
+        // Session үүсгэх
+        sessionStorage.setItem('admin_session', 'true');
         sessionStorage.setItem('admin_username', data.user.username);
+        sessionStorage.setItem('admin_last_activity', Date.now().toString());
         router.push('/admin');
         router.refresh();
       } else {

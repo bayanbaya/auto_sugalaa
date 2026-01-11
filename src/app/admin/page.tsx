@@ -88,13 +88,22 @@ export default function AdminPage() {
   };
 
   // Төлөв өөрчлөх (Устгах/Идэвхгүй болгох)
-  const handleDeleteClick = async (carId: string) => {
-    // Санамсаргүй дарахаас сэргийлж баталгаажуулалт авах
-    if (!window.confirm('Та энэ сугалааг устгахдаа итгэлтэй байна уу? Жагсаалтаас харагдахгүй болно.')) {
-      return;
-    }
-
+  const handleDeleteClick = async (carId: string, carName: string) => {
     try {
+      // Эхлээд lottery тоог татах
+      const lotteryResponse = await fetch(`/api/reports/all-lottery?carId=${carId}`);
+      const lotteryData = await lotteryResponse.json();
+      const lotteryCount = lotteryData.success ? lotteryData.data.length : 0;
+
+      // Баталгаажуулалтын мессеж
+      const confirmMessage = lotteryCount > 0
+        ? `Анхааруулга! "${carName}" машиныг устгавал энэ машинд үүссэн ${lotteryCount} ширхэг сугалааны мэдээлэл хамт устах болно.\n\nТа үргэлжлүүлэхийг зөвшөөрч байна уу?`
+        : `Та "${carName}" машиныг жагсаалтаас устгахдаа итгэлтэй байна уу?`;
+
+      if (!window.confirm(confirmMessage)) {
+        return;
+      }
+
       const response = await fetch('/api/cars/update-status', {
         method: 'PATCH',
         headers: {
@@ -114,7 +123,7 @@ export default function AdminPage() {
         )
       );
     } catch (err) {
-      console.error('Toggle status error:', err);
+      console.error('Delete error:', err);
       alert('Устгахад алдаа гарлаа');
     }
   };
@@ -227,7 +236,7 @@ export default function AdminPage() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDeleteClick(car.id);
+                        handleDeleteClick(car.id, car.carName);
                       }}
                       title="Устгах"
                       className="bg-white/90 backdrop-blur-md p-2 rounded-full shadow-lg border border-white/50 text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition-colors"

@@ -39,6 +39,8 @@ export default function ErrorTransactionsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
 
   useEffect(() => {
     fetchCars();
@@ -94,6 +96,17 @@ export default function ErrorTransactionsPage() {
       tran.employeeName?.toLowerCase().includes(search)
     );
   });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedTransactions = filteredTransactions.slice(startIndex, endIndex);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCar, searchTerm]);
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleString('mn-MN', {
@@ -164,49 +177,57 @@ export default function ErrorTransactionsPage() {
               <p className="text-red-600">{error}</p>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-              <div className="p-4 border-b border-slate-200 bg-red-50">
-                <p className="text-sm font-medium text-slate-700">
-                  Нийт: <span className="text-red-600 font-bold">{filteredTransactions.length}</span> алдаатай гүйлгээ
-                </p>
-              </div>
+            <>
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="p-4 border-b border-slate-200 bg-red-50">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <p className="text-sm font-medium text-slate-700">
+                      Нийт: <span className="text-red-600 font-bold">{filteredTransactions.length}</span> алдаатай гүйлгээ
+                    </p>
+                    {totalPages > 1 && (
+                      <p className="text-xs text-slate-500">
+                        Хуудас {currentPage} / {totalPages}
+                      </p>
+                    )}
+                  </div>
+                </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        ID
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        Машин
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        Дүн
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        Тайлбар
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        Данс
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        Огноо
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        Ажилтан
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {filteredTransactions.length === 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-slate-50 border-b border-slate-200">
                       <tr>
-                        <td colSpan={7} className="px-4 py-12 text-center text-slate-500">
-                          Алдаатай гүйлгээ олдсонгүй
-                        </td>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          ID
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          Машин
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          Дүн
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          Тайлбар
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          Данс
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          Огноо
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          Ажилтан
+                        </th>
                       </tr>
-                    ) : (
-                      filteredTransactions.map((tran) => (
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {paginatedTransactions.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="px-4 py-12 text-center text-slate-500">
+                            Алдаатай гүйлгээ олдсонгүй
+                          </td>
+                        </tr>
+                      ) : (
+                        paginatedTransactions.map((tran) => (
                         <tr key={tran.id} className="hover:bg-red-50 transition-colors">
                           <td className="px-4 py-3">
                             <span className="font-mono text-sm text-slate-600">#{tran.id}</span>
@@ -258,6 +279,59 @@ export default function ErrorTransactionsPage() {
                 </table>
               </div>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-sm text-slate-600">
+                  Харуулж байгаа: {startIndex + 1}-{Math.min(endIndex, filteredTransactions.length)} / {filteredTransactions.length}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    Өмнөх
+                  </button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`w-10 h-10 rounded-lg font-medium transition-all ${
+                            currentPage === pageNum
+                              ? 'bg-indigo-600 text-white'
+                              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    Дараах
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
           )}
         </div>
       </main>
