@@ -8,7 +8,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   // /add route дээр Navbar нуух
-  if (pathname.startsWith("/add") || pathname.startsWith("/admin") || pathname.startsWith("/login")
+  if (pathname.startsWith("/add") || pathname.startsWith("/admin") || pathname.startsWith("/login") || pathname.startsWith("/admin/print")
   || pathname.startsWith("/admin/error-tran") || pathname.startsWith("/login/all-lottery") || pathname.startsWith("/login/all-lottery") || pathname.startsWith("/admin/all-tran") ) {
     return null;
   }
@@ -26,18 +26,19 @@ export default function Navbar() {
             {/* Logo container - Premium treatment */}
             <div className="relative">
               {/* Subtle glow - Only on hover */}
-              <div className="absolute -inset-1 bg-amber-400/0 group-hover:bg-amber-400/20 rounded-xl blur-lg transition-all duration-300" />
+              <div className="absolute -inset-1 bg-amber-400/0 group-hover:bg-amber-400/20 rounded-full blur-lg transition-all duration-300" />
 
-              <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 p-[1px] shadow-lg shadow-black/20">
-                <div className="w-full h-full rounded-[11px] bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center">
+              <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 p-[1px] shadow-lg shadow-black/20">
+                {/* <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center">
+
+                </div> */}
                   <Image
                     src="/logo.svg"
                     alt="MB Auto Худалдаа лого"
-                    width={24}
-                    height={24}
-                    className="w-5 h-5 sm:w-6 sm:h-6 object-contain brightness-0"
+                    width={28}
+                    height={28}
+                    className="w-full h-full rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center"
                   />
-                </div>
               </div>
             </div>
 

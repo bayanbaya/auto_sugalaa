@@ -14,7 +14,9 @@ import {
   Clock,
   X,
   CheckCircle2,
-  Calendar
+  Calendar,
+  MessageCircle,
+  Share2
 } from 'lucide-react';
 
 interface LotteryResult {
@@ -129,20 +131,22 @@ const App = () => {
         <div className="text-center mb-8 sm:mb-12 lg:mb-16 space-y-2 sm:space-y-3 lg:space-y-4">
           <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white/5 border border-white/10 text-yellow-400 text-[10px] sm:text-xs font-medium tracking-wider uppercase mb-1 sm:mb-2 backdrop-blur-xl shadow-lg hover:bg-white/10 transition-all duration-300">
             <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-pulse" />
-            <span>Exclusive Lottery</span>
+            <span>259 мянга </span>
           </div>
 
           <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight leading-[1.1] px-2 sm:px-4">
             <span className="block bg-gradient-to-b from-white via-white to-white/50 bg-clip-text text-transparent pb-1">
-              Мөрөөдлийнхөө
+              {/* Мөрөөдлийнхөө */}
+               Монголын хамгийн  
             </span>
             <span className="block bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-200 bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
-              Хүлгийг Жолоод.
+              {/* Хүлгийг Жолоод. */}
+               том автомашины сугалаа
             </span>
           </h1>
 
           <p className="text-white/50 max-w-2xl mx-auto text-xs sm:text-sm md:text-base lg:text-lg px-4 sm:px-6 leading-relaxed mt-3 sm:mt-4">
-            Монголын хамгийн том автомашины сугалаа. Ил тод, найдвартай бөгөөд хурдан.
+           Мөрөөдлийнхөө Хүлгийг Жолоод. Ил тод, найдвартай бөгөөд хурдан.
           </p>
         </div>
 
@@ -241,69 +245,99 @@ const App = () => {
                   
 
                       <div className="space-y-3 sm:space-y-4">
-                        <div className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-white/5 rounded-xl sm:rounded-2xl border border-white/5">
+                        <a
+                          href="tel:99119911"
+                          className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-white/5 hover:bg-green-500/10 rounded-xl sm:rounded-2xl border border-white/5 hover:border-green-400/30 transition-all duration-300 active:scale-95 cursor-pointer group"
+                        >
                           <div className="min-w-0 flex-1">
                             <p className="text-[9px] sm:text-[10px] text-white/30 uppercase font-bold mb-1 tracking-tight sm:tracking-tighter">
                               Утасны дугаар
                             </p>
-                            <p className="font-mono font-bold text-white tracking-wider text-lg xs:text-xl sm:text-2xl break-all">
-                              99431042
+                            <p className="font-mono font-bold text-white group-hover:text-green-400 tracking-wider text-lg xs:text-xl sm:text-2xl break-all transition-colors">
+                              99119911
                             </p>
                           </div>
-                          <button
-                            onClick={() => copyToClipboard('99431042')}
-                            className="p-2.5 sm:p-3 bg-white/10 hover:bg-yellow-400 hover:text-black rounded-lg sm:rounded-xl transition-all duration-300 active:scale-95 flex-shrink-0"
-                            aria-label="Copy account number"
-                          >
-                            <Copy className="w-4 h-4 sm:w-5 sm:h-5" />
-                          </button>
-                        </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                copyToClipboard('99119911');
+                              }}
+                              className="p-2.5 sm:p-3 bg-white/10 hover:bg-yellow-400 hover:text-black rounded-lg sm:rounded-xl transition-all duration-300 active:scale-95"
+                              aria-label="Copy phone number"
+                            >
+                              <Copy className="w-4 h-4 sm:w-5 sm:h-5" />
+                            </button>
+                            <div className="p-2.5 sm:p-3 bg-green-500/20 rounded-lg sm:rounded-xl group-hover:bg-green-500/30 transition-all duration-300">
+                              <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />
+                            </div>
+                          </div>
+                        </a>
 
-                        <div className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-white/5 rounded-xl sm:rounded-2xl border border-white/5">
+                        <a
+                          href="https://m.me/100002299766815"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-white/5 hover:bg-blue-500/10 rounded-xl sm:rounded-2xl border border-white/5 hover:border-blue-400/30 transition-all duration-300 active:scale-95 cursor-pointer group"
+                        >
                           <div className="min-w-0 flex-1">
                             <p className="text-[9px] sm:text-[10px] text-white/30 uppercase font-bold mb-1 tracking-tight sm:tracking-tighter">
-                              Facebook Чат
+                              Facebook Messenger
                             </p>
-                            <a
-                              href="https://www.facebook.com/messages/t/100002299766815"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-bold text-blue-400 hover:text-blue-300 text-xs xs:text-sm sm:text-base break-all underline underline-offset-4"
-                            >
-                              facebook.com/messages/t/100002299766815
-                            </a>
+                            <p className="font-bold text-blue-400 group-hover:text-blue-300 text-xs xs:text-sm sm:text-base transition-colors">
+                              Чатаар холбогдох
+                            </p>
                           </div>
-                          <button
-                            onClick={() => copyToClipboard('https://www.facebook.com/messages/t/100002299766815')}
-                            className="p-2.5 sm:p-3 bg-white/10 hover:bg-yellow-400 hover:text-black rounded-lg sm:rounded-xl transition-all duration-300 active:scale-95 flex-shrink-0"
-                            aria-label="Copy Facebook chat link"
-                          >
-                            <Copy className="w-4 h-4 sm:w-5 sm:h-5" />
-                          </button>
-                        </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                copyToClipboard('https://m.me/100002299766815');
+                              }}
+                              className="p-2.5 sm:p-3 bg-white/10 hover:bg-yellow-400 hover:text-black rounded-lg sm:rounded-xl transition-all duration-300 active:scale-95"
+                              aria-label="Copy Messenger link"
+                            >
+                              <Copy className="w-4 h-4 sm:w-5 sm:h-5" />
+                            </button>
+                            <div className="p-2.5 sm:p-3 bg-blue-500/20 rounded-lg sm:rounded-xl group-hover:bg-blue-500/30 transition-all duration-300">
+                              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+                            </div>
+                          </div>
+                        </a>
 
-                        <div className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-white/5 rounded-xl sm:rounded-2xl border border-white/5">
+                        <a
+                          href="https://www.facebook.com/MBautohudaldaa"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-white/5 hover:bg-blue-500/10 rounded-xl sm:rounded-2xl border border-white/5 hover:border-blue-400/30 transition-all duration-300 active:scale-95 cursor-pointer group"
+                        >
                           <div className="min-w-0 flex-1">
                             <p className="text-[9px] sm:text-[10px] text-white/30 uppercase font-bold mb-1 tracking-tight sm:tracking-tighter">
                               Facebook Хуудас
                             </p>
-                            <a
-                              href="https://www.facebook.com/MBautohudaldaa"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-bold text-blue-400 hover:text-blue-300 text-xs xs:text-sm sm:text-base break-all underline underline-offset-4"
-                            >
-                              facebook.com/MBautohudaldaa
-                            </a>
+                            <p className="font-bold text-blue-400 group-hover:text-blue-300 text-xs xs:text-sm sm:text-base transition-colors">
+                              Хуудас үзэх
+                            </p>
                           </div>
-                          <button
-                            onClick={() => copyToClipboard('https://www.facebook.com/MBautohudaldaa')}
-                            className="p-2.5 sm:p-3 bg-white/10 hover:bg-yellow-400 hover:text-black rounded-lg sm:rounded-xl transition-all duration-300 active:scale-95 flex-shrink-0"
-                            aria-label="Copy Facebook page link"
-                          >
-                            <Copy className="w-4 h-4 sm:w-5 sm:h-5" />
-                          </button>
-                        </div>                        
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                copyToClipboard('https://www.facebook.com/MBautohudaldaa');
+                              }}
+                              className="p-2.5 sm:p-3 bg-white/10 hover:bg-yellow-400 hover:text-black rounded-lg sm:rounded-xl transition-all duration-300 active:scale-95"
+                              aria-label="Copy Facebook page link"
+                            >
+                              <Copy className="w-4 h-4 sm:w-5 sm:h-5" />
+                            </button>
+                            <div className="p-2.5 sm:p-3 bg-blue-500/20 rounded-lg sm:rounded-xl group-hover:bg-blue-500/30 transition-all duration-300">
+                              <Share2 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+                            </div>
+                          </div>
+                        </a>                        
                       </div>
                     </div>
 

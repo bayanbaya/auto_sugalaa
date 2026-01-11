@@ -7,7 +7,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   // /add route дээр Footer нуух
-  if (pathname.startsWith("/add") || pathname.startsWith("/admin") || pathname.startsWith("/login")
+  if (pathname.startsWith("/add") || pathname.startsWith("/admin") || pathname.startsWith("/login") || pathname.startsWith("/admin/print")
   || pathname.startsWith("/admin/error-tran") || pathname.startsWith("/login/all-lottery") || pathname.startsWith("/login/all-lottery") || pathname.startsWith("/admin/all-tran")) {
     return null;
   }
@@ -45,7 +45,7 @@ export default function Footer() {
             <h4 className="text-[11px] font-semibold text-zinc-300 uppercase tracking-wider">Холбоо барих</h4>
             <div className="space-y-3">
               <a
-                href="tel:+97699431042"
+                href="tel:+97699119911"
                 className="group flex items-center gap-3 text-[13px] sm:text-sm text-zinc-400 hover:text-white transition-colors duration-200"
               >
                 <div className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.06] flex items-center justify-center group-hover:bg-white/[0.06] group-hover:border-white/10 transition-all duration-200">
@@ -75,18 +75,18 @@ export default function Footer() {
 
           {/* CTA Section - Premium button */}
           <div className="space-y-5">
-            <h4 className="text-[11px] font-semibold text-zinc-300 uppercase tracking-wider">Вэбсайт хэрэгтэй юу?</h4>
+            {/* <h4 className="text-[11px] font-semibold text-zinc-300 uppercase tracking-wider">Вэбсайт хэрэгтэй юу?</h4>
             <p className="text-[13px] sm:text-sm text-zinc-400 leading-relaxed">
               Таны бизнест тохирсон, мэргэжлийн вэбсайт бүтээх үйлчилгээ үзүүлнэ.
             </p>
             <a
-              href="tel:+97699431042"
+              href="tel:+97699119911"
               className="group relative inline-flex items-center gap-2 px-4 h-10 rounded-lg bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 text-black font-semibold text-sm shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 transition-all duration-200 ease-out active:scale-[0.97]"
             >
               <Phone className="w-[15px] h-[15px]" />
               <span>Залгаад захиалаарай</span>
               <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+            </a> */}
           </div>
         </div>
 

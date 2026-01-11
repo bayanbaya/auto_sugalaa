@@ -32,6 +32,9 @@ export function AdminSidebar() {
     { name: 'Машины жагсаалт', icon: LayoutDashboard, href: '/admin' },
     { name: 'Нийт суглаа', icon: PieChart, href: '/admin/all-lottery' },
      { name: 'Алдаатай гүйлгээ', icon: Users, href: '/admin/error-tran' },
+       { name: 'Сугалаа хэвлэх', icon: Bell, href: '/admin/print' },
+
+
     // { name: 'Нийт гүйлгээ', icon: Bell, href: '/admin/all-tran' },
   ];
 
